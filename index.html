@@ -146,6 +146,14 @@ table.dt tbody tr:hover{background:#F0F7FA}
 @media(max-width:980px){.two-col{grid-template-columns:1fr}}
 .tag{font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:5px;background:var(--bg);color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
 .foot-note{font-size:10.5px;color:var(--muted2);margin-top:8px;line-height:1.5}
+
+/* stepper (rutas activas) */
+.stepper{display:inline-flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:7px;overflow:hidden;background:#fff}
+.step-btn{font-family:inherit;width:24px;height:24px;border:none;background:var(--bg);color:var(--navy);font-size:14px;font-weight:800;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;transition:.15s}
+.step-btn:hover:not(:disabled){background:var(--teal);color:#fff}
+.step-btn:disabled{opacity:.35;cursor:not-allowed}
+.step-val{min-width:26px;text-align:center;font-weight:800;font-size:12.5px;color:var(--navy)}
+.step-max{font-size:9.5px;color:var(--muted2);margin-top:3px;font-weight:600}
 </style>
 </head>
 <body>
@@ -288,13 +296,10 @@ table.dt tbody tr:hover{background:#F0F7FA}
         </div>
         <div class="ctrl">
           <label>&nbsp;</label>
-          <label class="toggle-row"><input type="checkbox" id="rutSimOn"><span>Simular consolidación de rutas activas</span></label>
-        </div>
-        <div class="ctrl" id="rutSimWrap" style="display:none">
-          <label>Rutas activas simuladas</label>
-          <div class="rangewrap"><input type="range" id="rutSimN" min="1" max="8" value="4"><span class="gval" id="rutSimNVal">4</span></div>
+          <button class="btn btn-sm" id="rutReset">↺ Restablecer rutas activas</button>
         </div>
       </div>
+      <div class="info-box"><span>ℹ️</span><div>Usa <b>−</b> / <b>+</b> en la columna "Rutas activas" para simular cuántas rutas de enfoque operan en cada programa de este campus. El tope respeta el <b>número máximo de rutas que tiene definidas el programa</b> en su catálogo.</div></div>
     </div>
 
     <div id="rutKpis" class="kpi-grid"></div>
@@ -397,8 +402,7 @@ const ST = {
   rutCampus: CAMPUSES[0],
   rutSem: 6,
   rutFusion: true,
-  rutSimOn: false,
-  rutSimN: 4,
+  rutRoutesOverride: {}, // key "campus|programa" -> N rutas activas (ajustadas a mano)
   mcPrograma: PROGRAMS[0],
   mcSelected: new Set(),
   fusiones: [] // {id, programa, campuses:[...]}
@@ -419,6 +423,17 @@ const PORT_INDEX = {};
 D.portafolio.forEach(r=>{ PORT_INDEX[r.c+'|'+r.p] = r; });
 const RUTASASIS_INDEX = {};
 D.rutasAsIs.forEach(r=>{ if(PROGRAMS.includes(r.p)) RUTASASIS_INDEX[r.p] = r; });
+
+// Máximo de rutas de enfoque que tiene cada programa: el mayor valor conocido entre
+// el catálogo de rutas con certificados definidos, RutasEnfoqeu_AsIs y Portafolio Actual.
+const PROG_MAX_ROUTES = {};
+PROGRAMS.forEach(p=>{
+  const distinctRoutes = new Set(D.rutasEnfoque.filter(x=>x.p===p).map(x=>x.ruta)).size;
+  const asis = RUTASASIS_INDEX[p];
+  let mx = Math.max(distinctRoutes, asis?asis.r2526:0, asis?asis.r2627:0);
+  D.portafolio.filter(r=>r.p===p).forEach(r=>{ mx = Math.max(mx, r.r2526||0, r.r2627||0); });
+  PROG_MAX_ROUTES[p] = Math.max(mx, 1);
+});
 
 function getSemArr(campus,programa){ return BD_INDEX[campus+'|'+programa] || null; }
 function getRutasCount(campus,programa){
@@ -684,14 +699,19 @@ function initRutas(){
   document.getElementById('rutCampus').addEventListener('change', e=>{ ST.rutCampus=e.target.value; renderRutas(); });
   document.getElementById('rutSem').addEventListener('change', e=>{ ST.rutSem=parseInt(e.target.value); renderRutas(); });
   document.getElementById('rutFusion').addEventListener('change', e=>{ ST.rutFusion=e.target.checked; renderRutas(); });
-  document.getElementById('rutSimOn').addEventListener('change', e=>{
-    ST.rutSimOn=e.target.checked;
-    document.getElementById('rutSimWrap').style.display = ST.rutSimOn?'flex':'none';
+  document.getElementById('rutReset').addEventListener('click', ()=>{
+    Object.keys(ST.rutRoutesOverride).forEach(k=>{ if(k.startsWith(ST.rutCampus+'|')) delete ST.rutRoutesOverride[k]; });
     renderRutas();
   });
-  document.getElementById('rutSimN').addEventListener('input', e=>{
-    ST.rutSimN=parseInt(e.target.value);
-    document.getElementById('rutSimNVal').textContent = ST.rutSimN;
+  document.getElementById('rutPrograms').addEventListener('click', e=>{
+    const btn = e.target.closest('.step-btn');
+    if(!btn) return;
+    const key = btn.dataset.key, programa = btn.dataset.programa;
+    const max = PROG_MAX_ROUTES[programa] || 8;
+    const current = ST.rutRoutesOverride[key] !== undefined ? ST.rutRoutesOverride[key] : getRutasCount(ST.rutCampus, programa);
+    let next = current + (btn.dataset.action==='inc' ? 1 : -1);
+    next = Math.max(1, Math.min(max, next));
+    ST.rutRoutesOverride[key] = next;
     renderRutas();
   });
 }
@@ -702,13 +722,15 @@ function rutasProgramData(campus, sem){
   offered.forEach(p=>{
     const arr = getSemArr(campus,p);
     if(!arr) return;
-    const real = getRutasCount(campus,p);
     const real12 = D.rutasEnfoque.some(x=>x.p===p);
     if(!real12) return; // no curriculum map data for routes
-    const routes = ST.rutSimOn ? ST.rutSimN : real;
+    const real = getRutasCount(campus,p);
+    const maxRoutes = PROG_MAX_ROUTES[p] || real;
+    const key = campus+'|'+p;
+    const routes = ST.rutRoutesOverride[key] !== undefined ? ST.rutRoutesOverride[key] : real;
     const cohort = arr[sem-1];
     const perRoute = routes>0 ? cohort/routes : cohort;
-    out.push({p, cohort, routes, realRoutes: real, perRoute, cls: classify2(perRoute)});
+    out.push({p, key, cohort, routes, realRoutes: real, maxRoutes, perRoute, cls: classify2(perRoute)});
   });
   return out;
 }
@@ -762,7 +784,16 @@ function renderRutas(){
     ptable += `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">Sin datos de rutas de enfoque para este campus</td></tr>`;
   }
   progData.forEach(d=>{
-    ptable += `<tr><td>${progShort(d.p)}</td><td>${fmt1(d.cohort)}</td><td>${d.routes}${ST.rutSimOn?' <span class="tag">simulado</span>':''}</td><td>${fmt1(d.perRoute)}</td><td>${badgeHtml(d.cls)}</td></tr>`;
+    const atMax = d.routes>=d.maxRoutes, atMin = d.routes<=1;
+    const changed = d.routes!==d.realRoutes;
+    ptable += `<tr><td>${progShort(d.p)}</td><td>${fmt1(d.cohort)}</td><td>
+      <div class="stepper">
+        <button class="step-btn" data-action="dec" data-key="${d.key}" data-programa="${d.p.replace(/"/g,'&quot;')}" ${atMin?'disabled':''}>−</button>
+        <span class="step-val">${d.routes}</span>
+        <button class="step-btn" data-action="inc" data-key="${d.key}" data-programa="${d.p.replace(/"/g,'&quot;')}" ${atMax?'disabled':''}>+</button>
+      </div>
+      <div class="step-max">máx ${d.maxRoutes}${changed?' · actual: '+d.realRoutes:''}</div>
+    </td><td>${fmt1(d.perRoute)}</td><td>${badgeHtml(d.cls)}</td></tr>`;
   });
   ptable += `</tbody></table>`;
   document.getElementById('rutPrograms').innerHTML = ptable;
