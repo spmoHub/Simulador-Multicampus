@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador Multicampus · Tecmilenio</title>
+<style>
+:root{
+  --navy:#0B1F3A;--navy2:#132B4D;--teal:#0A7EA4;--teal-l:#12A4CF;--accent:#F5A623;
+  --green:#27AE60;--green-l:#E8F8EF;--bg:#EFF3F8;--card:#fff;--border:#D9E2EC;
+  --text:#16263B;--muted:#647488;--muted2:#8C9BAE;
+  --flex:#8E5BC4;--flex-l:#F4EEFB;--multi:#0A7EA4;--multi-l:#E7F4F9;--pres:#1E9E5A;--pres-l:#E7F8EE;
+  --shadow:0 1px 2px rgba(11,31,58,.06),0 6px 18px rgba(11,31,58,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,'Inter',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.45}
+::-webkit-scrollbar{height:8px;width:8px}
+::-webkit-scrollbar-thumb{background:#C3D0DF;border-radius:8px}
+
+/* NAV */
+.nav{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);color:#fff;position:sticky;top:0;z-index:50;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.nav-inner{max-width:1480px;margin:0 auto;padding:13px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),#FFC664);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:var(--navy);flex-shrink:0;letter-spacing:-.5px}
+.ntitle{font-size:17px;font-weight:800;letter-spacing:-.2px}
+.nsub{font-size:10.5px;color:#9FB3C8;margin-top:1px;letter-spacing:.2px}
+.nav-tabs{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+.tab-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#C7D4E2;padding:8px 14px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap}
+.tab-btn:hover{background:rgba(255,255,255,.13);color:#fff}
+.tab-btn.active{background:var(--teal);border-color:var(--teal);color:#fff;box-shadow:0 2px 8px rgba(10,126,164,.4)}
+
+/* GLOBAL CONTROL BAR */
+.gbar{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:64px;z-index:40;box-shadow:0 1px 4px rgba(11,31,58,.04)}
+.gbar-inner{max-width:1480px;margin:0 auto;padding:10px 22px;display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+.gctrl{display:flex;align-items:center;gap:9px}
+.gctrl label{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
+.gctrl input[type=range]{width:110px;accent-color:var(--teal)}
+.gval{font-size:12px;font-weight:800;color:var(--navy);min-width:20px;text-align:center;background:var(--bg);border-radius:5px;padding:2px 6px}
+.gchips{margin-left:auto;display:flex;gap:8px}
+.gchip{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--muted);background:var(--bg);border:1px solid var(--border);padding:4px 9px;border-radius:20px}
+.gdot{width:7px;height:7px;border-radius:50%}
+
+/* LAYOUT */
+.container{max-width:1480px;margin:0 auto;padding:20px 22px 60px}
+.panel{display:none}
+.panel.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+.pheader{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.ptitle{font-size:19px;font-weight:800;color:var(--navy);letter-spacing:-.3px}
+.psub{font-size:12px;color:var(--muted);margin-top:3px;max-width:680px}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow);margin-bottom:16px}
+.card-title{font-size:13.5px;font-weight:800;color:var(--navy);margin-bottom:2px}
+.card-sub{font-size:11.5px;color:var(--muted);margin-bottom:12px}
+
+.controls-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:14px}
+.ctrl{display:flex;flex-direction:column;gap:4px}
+.ctrl label{font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.ctrl select,.ctrl input[type=number]{font-family:inherit;font-size:12.5px;padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:#fff;color:var(--text);min-width:170px;font-weight:600}
+.ctrl input[type=range]{width:140px;accent-color:var(--teal)}
+.rangewrap{display:flex;align-items:center;gap:8px}
+.toggle-row{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.toggle-row input{accent-color:var(--teal);width:15px;height:15px;cursor:pointer}
+.toggle-row span{font-size:12px;font-weight:700;color:var(--text)}
+.btn{font-family:inherit;font-size:12px;font-weight:700;padding:8px 16px;border-radius:7px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--teal);color:var(--teal)}
+.btn-primary{background:var(--teal);border-color:var(--teal);color:#fff}
+.btn-primary:hover{background:var(--teal-l);color:#fff}
+.btn-sm{padding:4px 10px;font-size:11px;border-radius:6px}
+.btn-ghost{border:none;background:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1}
+.btn-ghost:hover{color:#D9534F}
+
+/* KPI cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid var(--border);border-left:4px solid var(--teal);border-radius:10px;padding:13px 15px;box-shadow:var(--shadow)}
+.kpi.k-flex{border-left-color:var(--flex)}
+.kpi.k-multi{border-left-color:var(--multi)}
+.kpi.k-pres{border-left-color:var(--pres)}
+.kpi.k-accent{border-left-color:var(--accent)}
+.kpi-val{font-size:24px;font-weight:900;color:var(--navy);letter-spacing:-.5px}
+.kpi-lbl{font-size:11px;color:var(--muted);font-weight:700;margin-top:2px}
+.kpi-delta{font-size:10.5px;font-weight:800;margin-top:4px;display:inline-block;padding:1px 7px;border-radius:10px}
+.kpi-delta.up{background:var(--pres-l);color:var(--pres)}
+.kpi-delta.down{background:#FDECEA;color:#C0392B}
+
+/* badges & classification colors */
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.badge-flex{background:var(--flex-l);color:var(--flex)}
+.badge-multi{background:var(--multi-l);color:var(--multi)}
+.badge-pres{background:var(--pres-l);color:var(--pres)}
+.badge-none{background:#F1F3F6;color:var(--muted2)}
+.bdot{width:6px;height:6px;border-radius:50%}
+
+/* table */
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
+table.dt{border-collapse:collapse;width:100%;font-size:12px}
+table.dt thead th{position:sticky;top:0;background:var(--navy);color:#fff;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;padding:9px 10px;text-align:center;white-space:nowrap;z-index:2}
+table.dt thead th:first-child,table.dt thead th:nth-child(2){text-align:left}
+table.dt tbody td{padding:7px 10px;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap}
+table.dt tbody td:first-child,table.dt tbody td:nth-child(2){text-align:left;font-weight:700;color:var(--navy)}
+table.dt tbody tr:nth-child(even){background:#FAFBFD}
+table.dt tbody tr:hover{background:#F0F7FA}
+.cell{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;border-radius:6px;padding:3px 9px;min-width:38px;font-weight:800;font-size:12px}
+.cell-flex{background:var(--flex-l);color:var(--flex)}
+.cell-multi{background:var(--multi-l);color:var(--multi)}
+.cell-pres{background:var(--pres-l);color:var(--pres)}
+.cell-none{background:#F4F5F7;color:var(--muted2)}
+.cell-n{font-size:9px;font-weight:600;opacity:.75}
+
+/* legend */
+.legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--muted)}
+.ldot{width:10px;height:10px;border-radius:3px}
+
+/* fusion / merge cards */
+.fgroup{border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;background:#FCFDFE}
+.fgroup-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.fgroup-cert{font-size:13px;font-weight:800;color:var(--navy)}
+.fgroup-type{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-top:2px}
+.fcols{display:flex;gap:18px;align-items:stretch;flex-wrap:wrap}
+.fcol{flex:1;min-width:230px}
+.fcol-title{font-size:10px;font-weight:800;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px}
+.frow{display:flex;align-items:center;justify-content:space-between;padding:5px 9px;border-radius:6px;background:#F4F7FA;margin-bottom:5px;font-size:11.5px}
+.frow b{color:var(--navy)}
+.farrow{display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--muted2);min-width:30px}
+.fresult{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:8px;background:var(--navy);color:#fff}
+.fresult b{font-size:16px}
+
+/* stacked bar chart */
+.chart-row{display:grid;grid-template-columns:54px 1fr;gap:10px;align-items:center;margin-bottom:8px}
+.chart-lbl{font-size:11px;font-weight:800;color:var(--muted)}
+.sbar{display:flex;height:24px;border-radius:6px;overflow:hidden;background:#EEF2F7}
+.sbar-seg{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;min-width:0}
+
+/* misc */
+.info-box{background:var(--multi-l);border:1px solid #BFE3EF;border-radius:9px;padding:11px 14px;font-size:12px;color:#0C5670;display:flex;gap:9px;align-items:flex-start}
+.info-box b{color:var(--navy)}
+.empty-box{text-align:center;padding:30px 20px;color:var(--muted)}
+.empty-box .ee{font-size:26px;margin-bottom:8px}
+.checklist{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;padding-right:4px}
+.chk-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;border:1px solid var(--border);font-size:12px}
+.chk-item input{accent-color:var(--teal);width:14px;height:14px;cursor:pointer}
+.chk-item .ci-name{flex:1;font-weight:700;color:var(--navy)}
+.two-col{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}
+@media(max-width:980px){.two-col{grid-template-columns:1fr}}
+.tag{font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:5px;background:var(--bg);color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.foot-note{font-size:10.5px;color:var(--muted2);margin-top:8px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="nav-inner">
+    <div class="logo">TM</div>
+    <div>
+      <div class="ntitle">Simulador Multicampus</div>
+      <div class="nsub">Tecmilenio · Estrategia Académica · Proyección AD26</div>
+    </div>
+    <div class="nav-tabs" id="navTabs">
+      <button class="tab-btn" data-tab="clasificacion">Clasificación</button>
+      <button class="tab-btn" data-tab="troncalidad">Troncalidad</button>
+      <button class="tab-btn" data-tab="rutas">Rutas de Enfoque</button>
+      <button class="tab-btn" data-tab="multicampus">Multicampus</button>
+      <button class="tab-btn" data-tab="comparativo">Comparativo</button>
+    </div>
+  </div>
+</div>
+
+<div class="gbar">
+  <div class="gbar-inner">
+    <div class="gctrl">
+      <label>Umbral Flex (&lt;)</label>
+      <input type="range" id="gFlexMax" min="1" max="6" value="4" step="1">
+      <span class="gval" id="gFlexMaxVal">4</span>
+    </div>
+    <div class="gctrl">
+      <label>Umbral Presencial (≥)</label>
+      <input type="range" id="gPresMin" min="8" max="20" value="11" step="1">
+      <span class="gval" id="gPresMinVal">11</span>
+    </div>
+    <div class="gchips" id="gChips"></div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ============ TAB 1: CLASIFICACIÓN ============ -->
+  <div class="panel" id="panel-clasificacion">
+    <div class="pheader">
+      <div>
+        <div class="ptitle">Clasificación de grupos por semestre</div>
+        <div class="psub">Tamaño de generación proyectado (cadena de Markov, AD26) por campus y programa, clasificado en Flex / Multicampus / Presencial según los umbrales activos.</div>
+      </div>
+    </div>
+
+    <div class="kpi-grid" id="clasKpis"></div>
+
+    <div class="card">
+      <div class="card-title">Panorama de red — Sem 1 a Sem 7</div>
+      <div class="card-sub">Distribución de los 219 grupos campus–programa por clasificación, en cada semestre (independiente de los filtros de abajo)</div>
+      <div id="clasOverview"></div>
+      <div class="legend" style="margin-top:12px">
+        <div class="leg-item"><div class="ldot" style="background:var(--flex)"></div>Flex</div>
+        <div class="leg-item"><div class="ldot" style="background:var(--multi)"></div>Multicampus</div>
+        <div class="leg-item"><div class="ldot" style="background:var(--pres)"></div>Presencial</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Detalle por campus / programa</div>
+      <div class="controls-row">
+        <div class="ctrl">
+          <label>Campus</label>
+          <select id="clasCampus"></select>
+        </div>
+        <div class="ctrl">
+          <label>Programa</label>
+          <select id="clasPrograma"></select>
+        </div>
+      </div>
+      <div class="table-wrap"><div id="clasTable"></div></div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 2: TRONCALIDAD ============ -->
+  <div class="panel" id="panel-troncalidad">
+    <div class="pheader">
+      <div>
+        <div class="ptitle">Troncalidad curricular</div>
+        <div class="psub">Certificados de área / carrera / lengua compartidos por la secuencia homogénea de los planes de estudio (Sem 1–5). Permite integrar alumnos de distintos programas del mismo campus que cursan el mismo certificado en un salón.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="controls-row">
+        <div class="ctrl">
+          <label>Campus</label>
+          <select id="tronCampus"></select>
+        </div>
+        <div class="ctrl">
+          <label>Semestre</label>
+          <select id="tronSem">
+            <option value="1">Semestre 1</option>
+            <option value="2">Semestre 2</option>
+            <option value="3">Semestre 3</option>
+            <option value="4">Semestre 4</option>
+            <option value="5">Semestre 5</option>
+          </select>
+        </div>
+        <div class="ctrl">
+          <label>&nbsp;</label>
+          <label class="toggle-row"><input type="checkbox" id="tronApply" checked><span>Aplicar fusión por troncalidad</span></label>
+        </div>
+      </div>
+      <div class="info-box"><span>ℹ️</span><div>La troncalidad <b>no cambia la cohorte oficial</b> del programa; crea una <b>sesión de certificado compartida</b> entre programas que cursan el mismo certificado en el mismo semestre y campus, aumentando el tamaño de ese salón específico.</div></div>
+    </div>
+
+    <div id="tronKpis" class="kpi-grid"></div>
+    <div id="tronGroups"></div>
+  </div>
+
+  <!-- ============ TAB 3: RUTAS DE ENFOQUE ============ -->
+  <div class="panel" id="panel-rutas">
+    <div class="pheader">
+      <div>
+        <div class="ptitle">Rutas de Enfoque</div>
+        <div class="psub">En Sem 6–7 las 6 optativas del programa se sustituyen por los certificados de una ruta de enfoque. La reutilización de certificados entre rutas (y entre programas) permite reagrupar alumnos dispersos.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="controls-row">
+        <div class="ctrl">
+          <label>Campus</label>
+          <select id="rutCampus"></select>
+        </div>
+        <div class="ctrl">
+          <label>Semestre</label>
+          <select id="rutSem">
+            <option value="6">Semestre 6</option>
+            <option value="7">Semestre 7</option>
+          </select>
+        </div>
+        <div class="ctrl">
+          <label>&nbsp;</label>
+          <label class="toggle-row"><input type="checkbox" id="rutFusion" checked><span>Aplicar fusión de certificados reutilizados</span></label>
+        </div>
+        <div class="ctrl">
+          <label>&nbsp;</label>
+          <label class="toggle-row"><input type="checkbox" id="rutSimOn"><span>Simular consolidación de rutas activas</span></label>
+        </div>
+        <div class="ctrl" id="rutSimWrap" style="display:none">
+          <label>Rutas activas simuladas</label>
+          <div class="rangewrap"><input type="range" id="rutSimN" min="1" max="8" value="4"><span class="gval" id="rutSimNVal">4</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="rutKpis" class="kpi-grid"></div>
+
+    <div class="card">
+      <div class="card-title">Programas activos en el campus — dispersión por ruta</div>
+      <div class="card-sub">Tamaño promedio de grupo por ruta = matrícula del semestre ÷ rutas activas</div>
+      <div class="table-wrap"><div id="rutPrograms"></div></div>
+    </div>
+
+    <div id="rutGroups"></div>
+  </div>
+
+  <!-- ============ TAB 4: MULTICAMPUS ============ -->
+  <div class="panel" id="panel-multicampus">
+    <div class="pheader">
+      <div>
+        <div class="ptitle">Fusión Multicampus</div>
+        <div class="psub">Une las generaciones de un mismo programa entre campus mediante tecnología, para que grupos Flex o Multicampus aislados alcancen un tamaño viable.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="controls-row">
+        <div class="ctrl">
+          <label>Programa</label>
+          <select id="mcPrograma"></select>
+        </div>
+        <button class="btn" id="mcAutoSelect">Marcar campus Flex en Sem 1</button>
+        <button class="btn btn-primary" id="mcFusionar">Fusionar campus seleccionados</button>
+      </div>
+      <div class="table-wrap"><div id="mcTable"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Fusiones Multicampus guardadas</div>
+      <div class="card-sub">Estas fusiones alimentan la pestaña Comparativo</div>
+      <div id="mcFusionesList"></div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 5: COMPARATIVO ============ -->
+  <div class="panel" id="panel-comparativo">
+    <div class="pheader">
+      <div>
+        <div class="ptitle">Comparativo — Línea base vs. Estrategia Multicampus</div>
+        <div class="psub">Impacto agregado de la estrategia (fusiones multicampus guardadas + oportunidades de troncalidad y rutas de enfoque) sobre la clasificación de grupos en toda la red.</div>
+      </div>
+    </div>
+
+    <div class="kpi-grid" id="compKpis"></div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Línea base (sin estrategia)</div>
+        <div class="card-sub">Cada combinación campus–programa se clasifica de forma independiente</div>
+        <div id="compBase"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Con estrategia Multicampus</div>
+        <div class="card-sub">Aplicando las fusiones guardadas en la pestaña Multicampus</div>
+        <div id="compStrat"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Oportunidad de Troncalidad — Sem 1 y 2</div>
+      <div class="card-sub">Certificados de área/carrera compartidos entre programas del mismo campus, sumando todas las redes</div>
+      <div id="compTron"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Oportunidad de Rutas de Enfoque — Sem 6 y 7</div>
+      <div class="card-sub">Certificados de ruta reutilizados entre programas del mismo campus (con rutas activas actuales del portafolio)</div>
+      <div id="compRutas"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const DATA = {"campuses":["Cancún","Chihuahua","Ciudad Juárez","Cuautitlán Izcalli","Cuernavaca","Culiacán","Cumbres","Durango","Ferrería","Guadalajara","Guadalupe","Hermosillo","Laguna","Las Torres","Los Mochis","Mazatlán","Morelia","Mérida","Nuevo Laredo","Puebla","Querétaro","Reynosa","San Luis Potosí","San Nicolás","Tampico","Toluca","Veracruz","Villahermosa","Zacatecas","Zapopan"],"programs":["Licenciatura en Administración de Empresas","Licenciatura en Comercio y Negocios Internacionales","Licenciatura en Contabilidad y Estrategia Financiera","Licenciatura en Creación y Desarrollo de Empresas","Licenciatura en Derecho","Licenciatura en Diseño Gráfico y Animación","Licenciatura en Enfermería","Licenciatura en Gastronomía Internacional","Licenciatura en Ingeniería Industrial","Licenciatura en Ingeniería Mecatrónica","Licenciatura en Ingeniería en Desarrollo de Software","Licenciatura en Ingeniería en Logística y Cadena de Suministro","Licenciatura en Mercadotecnia","Licenciatura en Nutrición","Licenciatura en Psicología"],"baseDatos":[{"c":"Cancún","p":"Licenciatura en Administración de Empresas","s":[17.0,14.1,12.8,12.3,11.4,10.7,10.7]},{"c":"Cancún","p":"Licenciatura en Comercio y Negocios Internacionales","s":[16.0,12.8,11.2,10.2,9.6,9.2,8.9]},{"c":"Cancún","p":"Licenciatura en Derecho","s":[15.0,12.1,11.5,9.9,10.1,9.8,9.3]},{"c":"Cancún","p":"Licenciatura en Diseño Gráfico y Animación","s":[20.0,16.5,13.0,11.9,11.8,11.4,10.4]},{"c":"Cancún","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[21.0,18.2,15.5,15.1,14.5,13.6,14.1]},{"c":"Cancún","p":"Licenciatura en Mercadotecnia","s":[13.0,10.2,8.8,8.6,8.3,8.0,8.0]},{"c":"Cancún","p":"Licenciatura en Nutrición","s":[15.0,12.5,11.5,10.5,9.6,9.5,9.0]},{"c":"Chihuahua","p":"Licenciatura en Comercio y Negocios Internacionales","s":[15.0,13.3,12.0,12.0,11.4,10.6,9.9]},{"c":"Chihuahua","p":"Licenciatura en Creación y Desarrollo de Empresas","s":[21.0,17.6,15.4,14.4,14.4,13.6,13.7]},{"c":"Chihuahua","p":"Licenciatura en Derecho","s":[15.0,12.6,10.9,10.5,10.2,10.0,9.4]},{"c":"Chihuahua","p":"Licenciatura en Diseño Gráfico y Animación","s":[19.0,16.6,14.7,14.0,13.4,12.9,12.4]},{"c":"Chihuahua","p":"Licenciatura en Ingeniería Industrial","s":[11.0,9.2,8.2,8.3,8.1,7.7,7.8]},{"c":"Chihuahua","p":"Licenciatura en Ingeniería Mecatrónica","s":[18.0,15.5,13.0,12.8,12.1,12.2,12.1]},{"c":"Chihuahua","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[15.0,14.1,13.3,12.8,12.8,12.8,12.8]},{"c":"Chihuahua","p":"Licenciatura en Mercadotecnia","s":[9.0,8.3,7.1,6.7,5.7,5.5,5.6]},{"c":"Ciudad Juárez","p":"Licenciatura en Comercio y Negocios Internacionales","s":[34.0,29.1,27.4,26.5,24.6,25.0,24.5]},{"c":"Ciudad Juárez","p":"Licenciatura en Diseño Gráfico y Animación","s":[14.0,12.4,11.1,10.3,10.1,9.8,10.0]},{"c":"Ciudad Juárez","p":"Licenciatura en Ingeniería Industrial","s":[16.0,14.0,12.7,12.1,11.6,11.6,10.9]},{"c":"Ciudad Juárez","p":"Licenciatura en Ingeniería Mecatrónica","s":[12.0,10.3,9.6,9.3,8.6,8.3,8.3]},{"c":"Ciudad Juárez","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[19.0,17.0,15.3,13.6,13.3,12.7,12.7]},{"c":"Ciudad Juárez","p":"Licenciatura en Mercadotecnia","s":[20.0,16.6,15.5,14.5,14.4,13.5,13.2]},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Administración de Empresas","s":[32.0,26.9,24.0,23.5,22.9,22.2,21.4]},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Comercio y Negocios Internacionales","s":[57.0,52.1,47.6,45.1,41.8,41.0,39.6]},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Contabilidad y Estrategia Financiera","s":[14.0,12.3,11.3,11.0,10.7,10.5,10.4]},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Derecho","s":[21.0,18.9,16.4,14.9,14.8,14.6,14.8]},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Diseño Gráfico y Animación","s":[37.0,33.3,30.1,29.0,28.9,28.3,27.4]},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Ingeniería Industrial","s":[22.0,19.9,18.9,18.6,17.8,17.4,17.4]},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Ingeniería Mecatrónica","s":[25.0,22.4,19.8,19.5,19.0,18.9,18.4]},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[15.0,13.2,12.3,11.8,11.5,11.0,11.0]},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Mercadotecnia","s":[32.0,28.8,26.9,25.4,24.9,24.0,23.6]},{"c":"Cuernavaca","p":"Licenciatura en Administración de Empresas","s":[11.0,9.4,8.3,8.3,7.8,7.8,7.6]},{"c":"Cuernavaca","p":"Licenciatura en Comercio y Negocios Internacionales","s":[20.0,17.6,16.4,15.5,14.6,13.8,14.4]},{"c":"Cuernavaca","p":"Licenciatura en Diseño Gráfico y Animación","s":[12.0,11.3,10.4,10.0,9.4,8.7,8.3]},{"c":"Cuernavaca","p":"Licenciatura en Ingeniería Industrial","s":[4.0,3.5,3.2,3.1,3.0,2.8,2.6]},{"c":"Cuernavaca","p":"Licenciatura en Ingeniería Mecatrónica","s":[15.0,13.6,12.1,11.4,10.7,9.7,9.1]},{"c":"Cuernavaca","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[6.0,6.0,5.6,5.4,5.3,5.0,5.0]},{"c":"Cuernavaca","p":"Licenciatura en Mercadotecnia","s":[14.0,12.2,10.9,10.2,9.6,8.8,8.8]},{"c":"Culiacán","p":"Licenciatura en Administración de Empresas","s":[35.0,31.1,29.0,27.1,25.1,24.1,23.5]},{"c":"Culiacán","p":"Licenciatura en Comercio y Negocios Internacionales","s":[54.0,49.5,46.0,43.2,41.8,39.7,40.3]},{"c":"Culiacán","p":"Licenciatura en Contabilidad y Estrategia Financiera","s":[47.0,43.3,40.5,39.9,38.3,37.8,36.5]},{"c":"Culiacán","p":"Licenciatura en Diseño Gráfico y Animación","s":[18.0,16.0,14.4,14.1,13.0,12.5,13.1]},{"c":"Culiacán","p":"Licenciatura en Ingeniería Industrial","s":[35.0,32.8,29.2,28.2,28.1,27.5,27.2]},{"c":"Culiacán","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[36.0,32.5,31.1,28.5,28.9,27.3,27.0]},{"c":"Culiacán","p":"Licenciatura en Mercadotecnia","s":[33.0,30.8,29.5,28.5,27.5,26.5,25.3]},{"c":"Cumbres","p":"Licenciatura en Administración de Empresas","s":[24.0,20.4,19.1,16.9,16.8,16.1,16.1]},{"c":"Cumbres","p":"Licenciatura en Comercio y Negocios Internacionales","s":[38.0,33.0,31.1,29.2,28.7,27.9,27.6]},{"c":"Cumbres","p":"Licenciatura en Diseño Gráfico y Animación","s":[25.0,21.7,20.4,19.4,18.1,17.1,16.2]},{"c":"Cumbres","p":"Licenciatura en Ingeniería Industrial","s":[15.0,12.9,10.6,10.1,9.7,9.7,9.6]},{"c":"Cumbres","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[28.0,26.6,25.1,24.3,24.0,24.0,24.0]},{"c":"Cumbres","p":"Licenciatura en Mercadotecnia","s":[23.0,20.6,18.9,18.7,17.8,17.7,17.7]},{"c":"Cumbres","p":"Licenciatura en Psicología","s":[32.0,30.2,28.5,28.5,28.5,28.5,28.5]},{"c":"Durango","p":"Licenciatura en Administración de Empresas","s":[18.0,14.5,13.1,12.9,12.3,12.1,11.6]},{"c":"Durango","p":"Licenciatura en Comercio y Negocios Internacionales","s":[21.0,17.1,16.7,15.7,15.5,15.3,14.5]},{"c":"Durango","p":"Licenciatura en Diseño Gráfico y Animación","s":[7.0,6.3,5.7,5.5,5.0,4.9,4.8]},{"c":"Durango","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[10.0,9.1,8.5,8.1,7.9,7.6,7.6]},{"c":"Durango","p":"Licenciatura en Mercadotecnia","s":[4.0,3.2,2.9,2.6,2.5,2.4,2.3]},{"c":"Ferrería","p":"Licenciatura en Administración de Empresas","s":[21.0,17.7,15.4,14.5,13.6,13.0,12.9]},{"c":"Ferrería","p":"Licenciatura en Comercio y Negocios Internacionales","s":[35.0,29.0,27.1,25.5,24.6,24.6,23.4]},{"c":"Ferrería","p":"Licenciatura en Contabilidad y Estrategia Financiera","s":[14.0,12.3,11.3,11.0,10.7,10.5,10.4]},{"c":"Ferrería","p":"Licenciatura en Derecho","s":[16.0,14.2,13.3,12.6,11.7,11.5,11.1]},{"c":"Ferrería","p":"Licenciatura en Diseño Gráfico y Animación","s":[27.0,24.4,22.4,21.6,21.1,20.7,20.5]},{"c":"Ferrería","p":"Licenciatura en Ingeniería Industrial","s":[14.0,12.0,10.4,10.1,9.6,9.8,9.2]},{"c":"Ferrería","p":"Licenciatura en Ingeniería Mecatrónica","s":[21.0,17.7,15.1,13.9,13.0,12.0,11.8]},{"c":"Ferrería","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[44.0,40.7,37.6,37.6,35.8,35.0,35.0]},{"c":"Ferrería","p":"Licenciatura en Mercadotecnia","s":[21.0,19.1,17.8,17.0,16.1,16.0,16.1]},{"c":"Ferrería","p":"Licenciatura en Nutrición","s":[21.0,18.1,15.8,14.8,13.7,13.5,13.3]},{"c":"Ferrería","p":"Licenciatura en Psicología","s":[45.0,42.5,40.5,40.0,39.2,36.0,36.0]},{"c":"Guadalajara","p":"Licenciatura en Administración de Empresas","s":[10.0,8.2,7.3,7.1,6.3,5.8,5.5]},{"c":"Guadalajara","p":"Licenciatura en Comercio y Negocios Internacionales","s":[17.0,14.3,13.7,13.0,12.9,12.5,12.1]},{"c":"Guadalajara","p":"Licenciatura en Contabilidad y Estrategia Financiera","s":[11.0,9.6,8.9,8.9,8.8,8.5,8.6]},{"c":"Guadalajara","p":"Licenciatura en Ingeniería Industrial","s":[13.0,11.4,10.8,10.6,10.3,10.3,10.0]},{"c":"Guadalajara","p":"Licenciatura en Ingeniería Mecatrónica","s":[15.0,13.8,11.8,10.9,10.7,10.3,10.1]},{"c":"Guadalajara","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[18.0,16.3,14.5,14.2,13.7,12.9,13.0]},{"c":"Guadalajara","p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","s":[10.0,9.6,6.7,6.7,6.5,6.3,6.2]},{"c":"Guadalajara","p":"Licenciatura en Mercadotecnia","s":[8.0,7.2,6.5,6.2,6.2,5.9,6.4]},{"c":"Guadalupe","p":"Licenciatura en Administración de Empresas","s":[32.0,25.6,23.9,22.6,21.5,20.3,20.2]},{"c":"Guadalupe","p":"Licenciatura en Comercio y Negocios Internacionales","s":[40.0,35.4,32.9,31.3,30.6,29.5,28.8]},{"c":"Guadalupe","p":"Licenciatura en Ingeniería Industrial","s":[30.0,26.0,23.9,23.2,22.6,21.6,21.3]},{"c":"Guadalupe","p":"Licenciatura en Ingeniería Mecatrónica","s":[24.0,21.4,18.5,17.8,17.8,17.5,17.0]},{"c":"Guadalupe","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[23.0,21.7,20.2,19.7,18.9,17.7,17.7]},{"c":"Guadalupe","p":"Licenciatura en Mercadotecnia","s":[16.0,14.3,13.6,12.5,11.9,11.5,11.4]},{"c":"Hermosillo","p":"Licenciatura en Administración de Empresas","s":[7.0,6.2,4.7,4.5,4.1,4.1,4.0]},{"c":"Hermosillo","p":"Licenciatura en Comercio y Negocios Internacionales","s":[12.0,10.1,9.2,9.1,8.9,8.5,8.4]},{"c":"Hermosillo","p":"Licenciatura en Diseño Gráfico y Animación","s":[17.0,16.0,14.6,13.8,13.3,12.6,12.0]},{"c":"Hermosillo","p":"Licenciatura en Ingeniería Industrial","s":[10.0,9.0,7.8,7.3,7.2,7.0,6.9]},{"c":"Hermosillo","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[2.0,1.6,1.5,1.4,1.4,1.3,1.3]},{"c":"Hermosillo","p":"Licenciatura en Mercadotecnia","s":[4.0,3.6,3.3,3.3,3.0,2.9,2.9]},{"c":"Hermosillo","p":"Licenciatura en Psicología","s":[11.0,9.3,9.1,8.5,8.0,7.6,7.6]},{"c":"Laguna","p":"Licenciatura en Administración de Empresas","s":[21.0,18.7,17.1,16.3,15.5,15.7,15.2]},{"c":"Laguna","p":"Licenciatura en Comercio y Negocios Internacionales","s":[29.0,26.1,22.3,22.4,21.7,20.2,19.6]},{"c":"Laguna","p":"Licenciatura en Diseño Gráfico y Animación","s":[15.0,13.2,11.5,11.0,10.8,10.4,10.6]},{"c":"Laguna","p":"Licenciatura en Ingeniería Industrial","s":[25.0,22.9,21.1,20.2,19.8,19.4,18.9]},{"c":"Laguna","p":"Licenciatura en Ingeniería Mecatrónica","s":[23.0,20.3,18.7,18.0,18.2,17.7,16.5]},{"c":"Laguna","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[27.0,27.0,23.4,21.6,21.1,20.2,20.1]},{"c":"Laguna","p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","s":[3.0,2.7,1.9,1.9,1.8,1.7,1.7]},{"c":"Las Torres","p":"Licenciatura en Administración de Empresas","s":[50.0,42.5,38.7,36.6,35.3,34.1,33.9]},{"c":"Las Torres","p":"Licenciatura en Comercio y Negocios Internacionales","s":[105.0,91.9,84.1,79.5,78.0,75.9,73.9]},{"c":"Las Torres","p":"Licenciatura en Contabilidad y Estrategia Financiera","s":[90.0,79.2,71.7,67.5,65.8,63.4,61.5]},{"c":"Las Torres","p":"Licenciatura en Derecho","s":[67.0,55.6,51.7,48.8,46.8,47.0,46.2]},{"c":"Las Torres","p":"Licenciatura en Diseño Gráfico y Animación","s":[40.0,33.5,30.2,29.6,27.5,26.7,26.2]},{"c":"Las Torres","p":"Licenciatura en Enfermería","s":[15.0,13.0,11.7,11.2,10.7,10.4,10.2]},{"c":"Las Torres","p":"Licenciatura en Gastronomía Internacional","s":[28.0,22.6,18.2,17.1,14.5,14.7,14.3]},{"c":"Las Torres","p":"Licenciatura en Ingeniería Industrial","s":[49.0,42.2,37.7,35.7,35.4,34.6,34.0]},{"c":"Las Torres","p":"Licenciatura en Ingeniería Mecatrónica","s":[41.0,34.5,30.8,28.3,28.2,27.3,26.8]},{"c":"Las Torres","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[53.0,46.1,41.8,39.4,38.1,37.3,36.9]},{"c":"Las Torres","p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","s":[25.0,25.0,17.5,17.5,16.8,16.4,16.0]},{"c":"Las Torres","p":"Licenciatura en Mercadotecnia","s":[55.0,50.7,47.4,45.3,44.5,43.2,42.4]},{"c":"Las Torres","p":"Licenciatura en Nutrición","s":[32.0,27.8,26.8,26.1,24.6,24.0,23.1]},{"c":"Las Torres","p":"Licenciatura en Psicología","s":[78.0,67.7,63.8,61.6,58.8,57.0,56.7]},{"c":"Los Mochis","p":"Licenciatura en Administración de Empresas","s":[10.0,7.9,6.4,6.4,6.4,6.4,6.4]},{"c":"Los Mochis","p":"Licenciatura en Comercio y Negocios Internacionales","s":[8.0,6.7,6.1,5.8,5.1,4.9,4.6]},{"c":"Los Mochis","p":"Licenciatura en Ingeniería Industrial","s":[10.0,8.1,7.8,7.6,6.9,7.1,7.1]},{"c":"Los Mochis","p":"Licenciatura en Mercadotecnia","s":[6.0,4.8,4.7,4.5,4.5,5.2,5.2]},{"c":"Mazatlán","p":"Licenciatura en Administración de Empresas","s":[39.0,34.6,31.0,29.3,29.1,28.8,28.0]},{"c":"Mazatlán","p":"Licenciatura en Comercio y Negocios Internacionales","s":[30.0,27.3,25.5,24.5,24.0,23.8,23.0]},{"c":"Mazatlán","p":"Licenciatura en Ingeniería Industrial","s":[33.0,30.6,29.0,28.2,27.5,27.0,27.1]},{"c":"Mazatlán","p":"Licenciatura en Mercadotecnia","s":[29.0,25.3,23.5,22.9,22.3,21.8,21.6]},{"c":"Morelia","p":"Licenciatura en Administración de Empresas","s":[15.0,12.3,8.9,8.9,8.4,8.2,8.0]},{"c":"Morelia","p":"Licenciatura en Comercio y Negocios Internacionales","s":[10.0,9.3,8.5,8.1,7.8,7.5,7.4]},{"c":"Morelia","p":"Licenciatura en Contabilidad y Estrategia Financiera","s":[10.0,8.8,8.0,7.8,7.6,7.5,7.4]},{"c":"Morelia","p":"Licenciatura en Derecho","s":[7.0,5.5,4.6,5.1,4.9,4.8,4.7]},{"c":"Morelia","p":"Licenciatura en Diseño Gráfico y Animación","s":[7.0,4.4,4.4,4.4,4.2,4.1,4.0]},{"c":"Morelia","p":"Licenciatura en Ingeniería Industrial","s":[11.0,7.6,5.7,3.8,3.7,3.6,3.6]},{"c":"Morelia","p":"Licenciatura en Ingeniería Mecatrónica","s":[10.0,7.6,5.1,3.8,3.7,3.5,3.4]},{"c":"Morelia","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[3.0,2.6,2.4,2.3,2.3,2.2,2.1]},{"c":"Mérida","p":"Licenciatura en Administración de Empresas","s":[11.0,9.4,8.1,7.5,7.5,7.0,6.8]},{"c":"Mérida","p":"Licenciatura en Comercio y Negocios Internacionales","s":[6.0,5.1,4.4,4.0,3.8,3.8,3.7]},{"c":"Mérida","p":"Licenciatura en Contabilidad y Estrategia Financiera","s":[10.0,8.8,8.0,7.8,7.6,7.5,7.4]},{"c":"Mérida","p":"Licenciatura en Diseño Gráfico y Animación","s":[23.0,19.1,16.3,15.0,13.9,13.6,13.2]},{"c":"Mérida","p":"Licenciatura en Ingeniería Industrial","s":[3.0,2.3,2.1,2.0,1.9,1.8,1.6]},{"c":"Mérida","p":"Licenciatura en Ingeniería Mecatrónica","s":[10.0,8.6,8.2,7.7,7.2,6.8,6.2]},{"c":"Mérida","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[10.0,9.1,8.5,8.1,7.9,7.6,7.6]},{"c":"Nuevo Laredo","p":"Licenciatura en Administración de Empresas","s":[16.0,12.9,10.9,10.5,10.0,9.9,8.9]},{"c":"Nuevo Laredo","p":"Licenciatura en Comercio y Negocios Internacionales","s":[23.0,18.7,16.0,14.0,13.5,12.4,11.9]},{"c":"Nuevo Laredo","p":"Licenciatura en Diseño Gráfico y Animación","s":[26.0,22.7,19.9,18.3,16.7,16.7,16.1]},{"c":"Nuevo Laredo","p":"Licenciatura en Ingeniería Industrial","s":[3.0,1.9,1.4,1.4,1.3,1.2,1.2]},{"c":"Nuevo Laredo","p":"Licenciatura en Mercadotecnia","s":[9.0,7.8,6.7,6.3,5.9,5.8,5.6]},{"c":"Puebla","p":"Licenciatura en Administración de Empresas","s":[13.0,10.7,9.4,9.2,8.6,8.6,8.4]},{"c":"Puebla","p":"Licenciatura en Comercio y Negocios Internacionales","s":[20.0,16.9,15.1,14.0,13.4,13.2,13.0]},{"c":"Puebla","p":"Licenciatura en Derecho","s":[14.0,12.9,11.7,11.1,10.5,10.4,10.1]},{"c":"Puebla","p":"Licenciatura en Diseño Gráfico y Animación","s":[13.0,12.1,10.4,9.6,9.2,9.2,8.8]},{"c":"Puebla","p":"Licenciatura en Ingeniería Industrial","s":[15.0,12.4,10.6,10.0,9.5,9.5,9.5]},{"c":"Puebla","p":"Licenciatura en Ingeniería Mecatrónica","s":[17.0,15.2,13.3,12.4,11.9,10.8,10.8]},{"c":"Puebla","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[20.0,18.0,18.0,18.0,17.6,16.8,16.8]},{"c":"Puebla","p":"Licenciatura en Mercadotecnia","s":[15.0,13.1,11.9,11.4,10.8,10.8,10.6]},{"c":"Querétaro","p":"Licenciatura en Administración de Empresas","s":[10.0,8.2,7.7,7.1,6.5,6.3,6.3]},{"c":"Querétaro","p":"Licenciatura en Comercio y Negocios Internacionales","s":[12.0,10.3,9.2,8.9,8.5,8.3,8.3]},{"c":"Querétaro","p":"Licenciatura en Diseño Gráfico y Animación","s":[9.0,7.7,7.0,6.9,6.7,6.6,6.5]},{"c":"Querétaro","p":"Licenciatura en Ingeniería Industrial","s":[6.0,5.4,5.0,4.6,4.4,4.3,4.3]},{"c":"Querétaro","p":"Licenciatura en Ingeniería Mecatrónica","s":[14.0,11.3,10.3,9.9,10.0,9.9,8.9]},{"c":"Querétaro","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[21.0,17.2,17.2,16.0,15.6,14.9,14.9]},{"c":"Querétaro","p":"Licenciatura en Mercadotecnia","s":[7.0,6.3,6.0,5.7,5.4,5.4,4.9]},{"c":"Reynosa","p":"Licenciatura en Administración de Empresas","s":[17.0,14.6,13.3,12.7,11.8,11.1,10.1]},{"c":"Reynosa","p":"Licenciatura en Comercio y Negocios Internacionales","s":[41.0,36.2,33.1,31.9,30.2,29.0,28.0]},{"c":"Reynosa","p":"Licenciatura en Derecho","s":[13.0,12.3,11.3,11.3,10.9,10.7,10.5]},{"c":"Reynosa","p":"Licenciatura en Diseño Gráfico y Animación","s":[25.0,22.1,18.9,18.1,17.5,16.8,16.2]},{"c":"Reynosa","p":"Licenciatura en Ingeniería Industrial","s":[14.0,11.8,10.6,10.5,10.3,10.2,10.0]},{"c":"Reynosa","p":"Licenciatura en Ingeniería Mecatrónica","s":[22.0,19.8,18.0,17.2,16.7,16.7,16.7]},{"c":"Reynosa","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[23.0,20.4,16.8,16.8,16.4,15.7,15.7]},{"c":"Reynosa","p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","s":[10.0,9.6,6.7,6.7,6.5,6.3,6.2]},{"c":"San Luis Potosí","p":"Licenciatura en Administración de Empresas","s":[8.0,6.3,5.1,4.7,4.4,4.4,4.3]},{"c":"San Luis Potosí","p":"Licenciatura en Comercio y Negocios Internacionales","s":[32.0,28.5,25.8,24.9,24.5,23.7,22.6]},{"c":"San Luis Potosí","p":"Licenciatura en Contabilidad y Estrategia Financiera","s":[12.0,10.3,9.0,8.8,8.4,8.5,8.8]},{"c":"San Luis Potosí","p":"Licenciatura en Diseño Gráfico y Animación","s":[14.0,12.1,11.3,10.4,10.0,9.1,9.0]},{"c":"San Luis Potosí","p":"Licenciatura en Ingeniería Industrial","s":[14.0,12.1,11.4,11.1,10.5,10.4,10.6]},{"c":"San Luis Potosí","p":"Licenciatura en Ingeniería Mecatrónica","s":[13.0,11.7,10.3,9.5,9.1,8.3,8.5]},{"c":"San Luis Potosí","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[15.0,14.0,14.0,13.0,13.0,10.8,10.8]},{"c":"San Luis Potosí","p":"Licenciatura en Mercadotecnia","s":[8.0,6.7,6.7,6.6,6.2,6.2,6.2]},{"c":"San Luis Potosí","p":"Licenciatura en Nutrición","s":[5.0,4.3,3.9,3.8,3.6,3.4,3.2]},{"c":"San Nicolás","p":"Licenciatura en Administración de Empresas","s":[41.0,35.0,32.0,31.0,29.2,29.1,28.7]},{"c":"San Nicolás","p":"Licenciatura en Comercio y Negocios Internacionales","s":[57.0,49.9,46.3,44.8,43.1,42.4,42.2]},{"c":"San Nicolás","p":"Licenciatura en Diseño Gráfico y Animación","s":[26.0,24.7,19.8,18.5,17.6,17.1,16.6]},{"c":"San Nicolás","p":"Licenciatura en Ingeniería Industrial","s":[55.0,48.7,45.5,43.5,42.9,42.1,41.4]},{"c":"San Nicolás","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[66.0,61.5,59.0,58.2,56.2,56.2,56.2]},{"c":"San Nicolás","p":"Licenciatura en Mercadotecnia","s":[33.0,30.1,28.4,26.4,25.8,25.1,24.0]},{"c":"San Nicolás","p":"Licenciatura en Nutrición","s":[13.0,10.5,10.1,9.9,9.6,9.1,9.0]},{"c":"Tampico","p":"Licenciatura en Administración de Empresas","s":[6.0,4.8,4.2,4.0,3.8,3.8,3.6]},{"c":"Tampico","p":"Licenciatura en Contabilidad y Estrategia Financiera","s":[10.0,8.8,8.0,7.8,7.6,7.5,7.4]},{"c":"Tampico","p":"Licenciatura en Ingeniería Industrial","s":[4.0,3.6,3.2,3.1,3.0,2.9,2.9]},{"c":"Tampico","p":"Licenciatura en Ingeniería Mecatrónica","s":[10.0,9.6,8.4,7.9,7.6,7.3,7.1]},{"c":"Tampico","p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","s":[3.0,3.0,2.1,2.1,2.0,2.0,1.9]},{"c":"Tampico","p":"Licenciatura en Mercadotecnia","s":[10.0,8.8,8.1,7.7,7.4,7.3,7.2]},{"c":"Toluca","p":"Licenciatura en Administración de Empresas","s":[17.0,14.7,13.5,12.3,11.8,11.6,11.3]},{"c":"Toluca","p":"Licenciatura en Comercio y Negocios Internacionales","s":[29.0,25.5,23.6,22.8,23.2,22.8,22.3]},{"c":"Toluca","p":"Licenciatura en Derecho","s":[4.0,4.0,4.0,2.7,2.6,2.5,2.5]},{"c":"Toluca","p":"Licenciatura en Diseño Gráfico y Animación","s":[13.0,11.8,10.8,10.2,9.4,9.2,8.7]},{"c":"Toluca","p":"Licenciatura en Ingeniería Industrial","s":[24.0,22.3,21.3,20.9,20.9,20.5,20.2]},{"c":"Toluca","p":"Licenciatura en Ingeniería Mecatrónica","s":[30.0,27.4,24.7,24.2,23.1,22.8,22.9]},{"c":"Toluca","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[25.0,21.9,21.3,20.4,20.1,19.6,19.0]},{"c":"Toluca","p":"Licenciatura en Mercadotecnia","s":[16.0,14.5,13.2,12.5,12.4,12.1,12.3]},{"c":"Toluca","p":"Licenciatura en Psicología","s":[17.0,17.0,17.0,17.0,16.5,15.8,15.8]},{"c":"Veracruz","p":"Licenciatura en Administración de Empresas","s":[10.0,8.8,7.7,7.2,7.2,7.2,6.8]},{"c":"Veracruz","p":"Licenciatura en Comercio y Negocios Internacionales","s":[11.0,9.5,8.5,7.9,8.1,8.0,8.0]},{"c":"Veracruz","p":"Licenciatura en Derecho","s":[5.0,4.5,3.9,3.9,3.8,3.7,3.6]},{"c":"Veracruz","p":"Licenciatura en Diseño Gráfico y Animación","s":[11.0,9.7,8.1,7.5,6.7,6.5,6.4]},{"c":"Veracruz","p":"Licenciatura en Ingeniería Industrial","s":[6.0,5.3,4.5,4.5,4.4,4.2,4.3]},{"c":"Veracruz","p":"Licenciatura en Ingeniería Mecatrónica","s":[12.0,10.9,9.3,9.1,8.7,8.5,8.4]},{"c":"Veracruz","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[12.0,11.5,11.5,11.5,11.2,10.7,10.7]},{"c":"Veracruz","p":"Licenciatura en Mercadotecnia","s":[6.0,5.6,5.2,5.0,5.0,4.7,4.7]},{"c":"Villahermosa","p":"Licenciatura en Administración de Empresas","s":[16.0,14.0,12.9,12.3,11.7,11.8,11.3]},{"c":"Villahermosa","p":"Licenciatura en Comercio y Negocios Internacionales","s":[26.0,22.2,20.2,19.6,18.1,17.4,17.8]},{"c":"Villahermosa","p":"Licenciatura en Diseño Gráfico y Animación","s":[19.0,16.4,14.3,13.2,12.1,12.0,11.6]},{"c":"Villahermosa","p":"Licenciatura en Ingeniería Industrial","s":[16.0,14.2,13.0,12.9,12.1,12.3,12.1]},{"c":"Villahermosa","p":"Licenciatura en Ingeniería Mecatrónica","s":[21.0,18.7,16.9,14.8,13.2,13.2,12.9]},{"c":"Villahermosa","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[19.0,17.4,15.7,15.2,14.5,13.5,13.5]},{"c":"Zacatecas","p":"Licenciatura en Administración de Empresas","s":[4.0,3.6,3.2,3.0,2.9,2.8,2.7]},{"c":"Zacatecas","p":"Licenciatura en Comercio y Negocios Internacionales","s":[3.0,2.7,2.4,2.3,2.2,2.2,2.1]},{"c":"Zacatecas","p":"Licenciatura en Contabilidad y Estrategia Financiera","s":[6.0,5.3,4.8,4.7,4.6,4.5,4.5]},{"c":"Zacatecas","p":"Licenciatura en Creación y Desarrollo de Empresas","s":[17.0,14.3,11.6,11.6,11.3,11.3,11.3]},{"c":"Zacatecas","p":"Licenciatura en Derecho","s":[3.0,2.6,2.1,2.1,2.0,2.0,1.9]},{"c":"Zacatecas","p":"Licenciatura en Ingeniería Industrial","s":[6.0,5.1,3.8,3.4,3.4,3.4,3.4]},{"c":"Zacatecas","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[10.0,9.1,8.5,8.1,7.9,7.6,7.6]},{"c":"Zacatecas","p":"Licenciatura en Mercadotecnia","s":[6.0,5.3,4.9,4.6,4.4,4.4,4.3]},{"c":"Zapopan","p":"Licenciatura en Administración de Empresas","s":[21.0,17.6,15.4,14.7,13.3,14.1,13.0]},{"c":"Zapopan","p":"Licenciatura en Comercio y Negocios Internacionales","s":[24.0,20.2,18.2,17.6,16.8,16.6,16.6]},{"c":"Zapopan","p":"Licenciatura en Diseño Gráfico y Animación","s":[13.0,11.0,10.6,10.5,10.2,10.4,9.6]},{"c":"Zapopan","p":"Licenciatura en Ingeniería Industrial","s":[16.0,14.7,11.5,11.0,10.9,10.3,10.3]},{"c":"Zapopan","p":"Licenciatura en Ingeniería en Desarrollo de Software","s":[22.0,20.4,18.8,18.4,18.2,17.6,17.6]},{"c":"Zapopan","p":"Licenciatura en Mercadotecnia","s":[16.0,13.3,12.8,11.5,11.2,10.8,10.5]}],"portafolio":[{"c":"Cancún","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Cancún","p":"Licenciatura en Derecho","r2526":4,"r2627":4},{"c":"Cancún","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Cancún","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Cancún","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Cancún","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Cancún","p":"Licenciatura en Nutrición","r2526":0,"r2627":0},{"c":"Chihuahua","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Chihuahua","p":"Licenciatura en Derecho","r2526":4,"r2627":4},{"c":"Chihuahua","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Chihuahua","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Chihuahua","p":"Licenciatura en Creación y Desarrollo de Empresas","r2526":2,"r2627":2},{"c":"Chihuahua","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Chihuahua","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Chihuahua","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Ciudad Juárez","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Ciudad Juárez","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Ciudad Juárez","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Ciudad Juárez","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Ciudad Juárez","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Ciudad Juárez","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Derecho","r2526":4,"r2627":4},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Contabilidad y Estrategia Financiera","r2526":2,"r2627":5},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Cuautitlán Izcalli","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Cuernavaca","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Cuernavaca","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Cuernavaca","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Cuernavaca","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Cuernavaca","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Cuernavaca","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Cuernavaca","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Culiacán","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Culiacán","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Culiacán","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Culiacán","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Culiacán","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Culiacán","p":"Licenciatura en Contabilidad y Estrategia Financiera","r2526":2,"r2627":5},{"c":"Culiacán","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Cumbres","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Cumbres","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Cumbres","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Cumbres","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Cumbres","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Cumbres","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Cumbres","p":"Licenciatura en Psicología","r2526":0,"r2627":0},{"c":"Durango","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Durango","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Durango","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Durango","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Durango","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Ferrería","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Ferrería","p":"Licenciatura en Derecho","r2526":4,"r2627":4},{"c":"Ferrería","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Ferrería","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Ferrería","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Ferrería","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Ferrería","p":"Licenciatura en Contabilidad y Estrategia Financiera","r2526":2,"r2627":5},{"c":"Ferrería","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Ferrería","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Ferrería","p":"Licenciatura en Psicología","r2526":0,"r2627":0},{"c":"Ferrería","p":"Licenciatura en Nutrición","r2526":0,"r2627":0},{"c":"Guadalajara","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Guadalajara","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Guadalajara","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Guadalajara","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Guadalajara","p":"Licenciatura en Contabilidad y Estrategia Financiera","r2526":2,"r2627":5},{"c":"Guadalajara","p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","r2526":3,"r2627":3},{"c":"Guadalajara","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Guadalajara","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Guadalupe","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Guadalupe","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Guadalupe","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Guadalupe","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Guadalupe","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Guadalupe","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Hermosillo","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Hermosillo","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Hermosillo","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Hermosillo","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Hermosillo","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Hermosillo","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Hermosillo","p":"Licenciatura en Psicología","r2526":0,"r2627":0},{"c":"Laguna","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Laguna","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Laguna","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Laguna","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Laguna","p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","r2526":3,"r2627":3},{"c":"Laguna","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Laguna","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Las Torres","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Las Torres","p":"Licenciatura en Gastronomía Internacional","r2526":3,"r2627":3},{"c":"Las Torres","p":"Licenciatura en Derecho","r2526":4,"r2627":4},{"c":"Las Torres","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Las Torres","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Las Torres","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Las Torres","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Las Torres","p":"Licenciatura en Contabilidad y Estrategia Financiera","r2526":2,"r2627":5},{"c":"Las Torres","p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","r2526":3,"r2627":3},{"c":"Las Torres","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Las Torres","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Las Torres","p":"Licenciatura en Psicología","r2526":0,"r2627":0},{"c":"Las Torres","p":"Licenciatura en Nutrición","r2526":0,"r2627":0},{"c":"Las Torres","p":"Licenciatura en Enfermería","r2526":0,"r2627":0},{"c":"Los Mochis","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Los Mochis","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Los Mochis","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Los Mochis","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Mazatlán","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Mazatlán","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Mazatlán","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Mazatlán","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Mérida","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Mérida","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Mérida","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Mérida","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Mérida","p":"Licenciatura en Contabilidad y Estrategia Financiera","r2526":2,"r2627":5},{"c":"Mérida","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Mérida","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Nuevo Laredo","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Nuevo Laredo","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Nuevo Laredo","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Nuevo Laredo","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Nuevo Laredo","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Puebla","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Puebla","p":"Licenciatura en Derecho","r2526":4,"r2627":4},{"c":"Puebla","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Puebla","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Puebla","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Puebla","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Puebla","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Puebla","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Querétaro","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Querétaro","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Querétaro","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Querétaro","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Querétaro","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Querétaro","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Querétaro","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Reynosa","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Reynosa","p":"Licenciatura en Derecho","r2526":4,"r2627":4},{"c":"Reynosa","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Reynosa","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Reynosa","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Reynosa","p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","r2526":3,"r2627":3},{"c":"Reynosa","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Reynosa","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"San Luis Potosí","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"San Luis Potosí","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"San Luis Potosí","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"San Luis Potosí","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"San Luis Potosí","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"San Luis Potosí","p":"Licenciatura en Contabilidad y Estrategia Financiera","r2526":2,"r2627":5},{"c":"San Luis Potosí","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"San Luis Potosí","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"San Luis Potosí","p":"Licenciatura en Nutrición","r2526":0,"r2627":0},{"c":"San Nicolás","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"San Nicolás","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"San Nicolás","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"San Nicolás","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"San Nicolás","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"San Nicolás","p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","r2526":3,"r2627":3},{"c":"San Nicolás","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Toluca","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Toluca","p":"Licenciatura en Derecho","r2526":4,"r2627":4},{"c":"Toluca","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Toluca","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Toluca","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Toluca","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Toluca","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Toluca","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Toluca","p":"Licenciatura en Psicología","r2526":0,"r2627":0},{"c":"Veracruz","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Veracruz","p":"Licenciatura en Derecho","r2526":4,"r2627":4},{"c":"Veracruz","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Veracruz","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Veracruz","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Veracruz","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Veracruz","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Veracruz","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Villahermosa","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Villahermosa","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Villahermosa","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Villahermosa","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Villahermosa","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Villahermosa","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Zapopan","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Zapopan","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Zapopan","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Zapopan","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Zapopan","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Zapopan","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Aguascalientes","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Aguascalientes","p":"Licenciatura en Derecho","r2526":4,"r2627":4},{"c":"Aguascalientes","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Aguascalientes","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Aguascalientes","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Aguascalientes","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Aguascalientes","p":"Licenciatura en Contabilidad y Estrategia Financiera","r2526":2,"r2627":5},{"c":"Aguascalientes","p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","r2526":3,"r2627":3},{"c":"Aguascalientes","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Aguascalientes","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Morelia","p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"c":"Morelia","p":"Licenciatura en Derecho","r2526":4,"r2627":4},{"c":"Morelia","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Morelia","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Morelia","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Morelia","p":"Licenciatura en Contabilidad y Estrategia Financiera","r2526":2,"r2627":5},{"c":"Morelia","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Morelia","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Tampico","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Tampico","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Tampico","p":"Licenciatura en Contabilidad y Estrategia Financiera","r2526":2,"r2627":5},{"c":"Tampico","p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","r2526":3,"r2627":3},{"c":"Tampico","p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"c":"Tampico","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"c":"Zacatecas","p":"Licenciatura en Derecho","r2526":4,"r2627":4},{"c":"Zacatecas","p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"c":"Zacatecas","p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"c":"Zacatecas","p":"Licenciatura en Creación y Desarrollo de Empresas","r2526":2,"r2627":2},{"c":"Zacatecas","p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"c":"Zacatecas","p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"c":"Zacatecas","p":"Licenciatura en Contabilidad y Estrategia Financiera","r2526":2,"r2627":5},{"c":"Zacatecas","p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4}],"rutasAsIs":[{"p":"Licenciatura en Ingeniería Mecatrónica","r2526":8,"r2627":8},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","r2526":3,"r2627":3},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","r2526":6,"r2627":6},{"p":"Licenciatura en Ingeniería Industrial","r2526":4,"r2627":4},{"p":"Licenciatura en Administración de Empresas","r2526":4,"r2627":7},{"p":"Licenciatura en Comercio y Negocios Internacionales","r2526":2,"r2627":5},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","r2526":2,"r2627":5},{"p":"Licenciatura en Creación y Desarrollo de Empresas","r2526":2,"r2627":2},{"p":"Licenciatura en Derecho","r2526":4,"r2627":4},{"p":"Licenciatura en Diseño Gráfico y Animación","r2526":3,"r2627":3},{"p":"Licenciatura en Gastronomía Internacional","r2526":3,"r2627":3},{"p":"Licenciatura en Mercadotecnia","r2526":4,"r2627":4},{"p":"Ingeniero en Tecnología y trasnformación Digital","r2526":5,"r2627":5},{"p":"Licenciatura en Administración y Desarrollo de talento","r2526":2,"r2627":2},{"p":"Licenciatura en Educación","r2526":3,"r2627":3}],"mapsSem":[{"p":"Licenciatura en Administración de Empresas","cert":"Transformación digital","tipo":"Certificado de Área","sec":1,"sem":1},{"p":"Licenciatura en Administración de Empresas","cert":"Fundamentos de programación","tipo":"Certificado de Área","sec":3,"sem":1},{"p":"Licenciatura en Administración de Empresas","cert":"Estrategia y ventaja competitiva","tipo":"Certificado de Área","sec":2,"sem":1},{"p":"Licenciatura en Administración de Empresas","cert":"Certificado de Lengua Extranjera 1","tipo":"Certificado Lengua Extranjera","sec":4,"sem":1},{"p":"Licenciatura en Administración de Empresas","cert":"Emprendimiento","tipo":"Certificado de Área","sec":6,"sem":2},{"p":"Licenciatura en Administración de Empresas","cert":"Big Data Analytics","tipo":"Certificado de Área","sec":7,"sem":2},{"p":"Licenciatura en Administración de Empresas","cert":"Administración de operaciones","tipo":"Certificado de Área","sec":5,"sem":2},{"p":"Licenciatura en Administración de Empresas","cert":"Certificado de Lengua Extranjera 2","tipo":"Certificado Lengua Extranjera","sec":8,"sem":2},{"p":"Licenciatura en Administración de Empresas","cert":"Mercadotecnia estratégica","tipo":"Certificado Carrera","sec":9,"sem":3},{"p":"Licenciatura en Administración de Empresas","cert":"Derecho corporativo","tipo":"Certificado Carrera","sec":11,"sem":3},{"p":"Licenciatura en Administración de Empresas","cert":"Administración del talento humano","tipo":"Certificado Carrera","sec":10,"sem":3},{"p":"Licenciatura en Administración de Empresas","cert":"Certificado de Lengua Extranjera 3","tipo":"Certificado Lengua Extranjera","sec":12,"sem":3},{"p":"Licenciatura en Administración de Empresas","cert":"Mercadotecnia digital","tipo":"Certificado Carrera","sec":15,"sem":4},{"p":"Licenciatura en Administración de Empresas","cert":"Bienestar y significado en el trabajo","tipo":"Certificado Carrera","sec":14,"sem":4},{"p":"Licenciatura en Administración de Empresas","cert":"Análisis de estados financieros","tipo":"Certificado Carrera","sec":13,"sem":4},{"p":"Licenciatura en Administración de Empresas","cert":"Certificado de Lengua Extranjera 4","tipo":"Certificado Lengua Extranjera","sec":16,"sem":4},{"p":"Licenciatura en Administración de Empresas","cert":"Consultoría administrativa","tipo":"Certificado Carrera","sec":17,"sem":5},{"p":"Licenciatura en Administración de Empresas","cert":"Compras y desarrollo de proveedores","tipo":"Certificado Carrera","sec":19,"sem":5},{"p":"Licenciatura en Administración de Empresas","cert":"Administración de proyectos","tipo":"Certificado Carrera","sec":18,"sem":5},{"p":"Licenciatura en Administración de Empresas","cert":"Certificado de Lengua Extranjera 5","tipo":"Certificado Lengua Extranjera","sec":20,"sem":5},{"p":"Licenciatura en Administración de Empresas","cert":"Optativa 1","tipo":"Ruta de Enfoque","sec":21,"sem":6},{"p":"Licenciatura en Administración de Empresas","cert":"Optativa 2","tipo":"Ruta de Enfoque","sec":22,"sem":6},{"p":"Licenciatura en Administración de Empresas","cert":"Optativa 3","tipo":"Ruta de Enfoque","sec":23,"sem":6},{"p":"Licenciatura en Administración de Empresas","cert":"Certificado de Lengua Extranjera 6","tipo":"Certificado Lengua Extranjera","sec":24,"sem":6},{"p":"Licenciatura en Administración de Empresas","cert":"Optativa 4","tipo":"Ruta de Enfoque","sec":25,"sem":7},{"p":"Licenciatura en Administración de Empresas","cert":"Optativa 5","tipo":"Ruta de Enfoque","sec":26,"sem":7},{"p":"Licenciatura en Administración de Empresas","cert":"Optativa 6","tipo":"Ruta de Enfoque","sec":27,"sem":7},{"p":"Licenciatura en Administración de Empresas","cert":"Certificado de Lengua Extranjera 7","tipo":"Certificado Lengua Extranjera","sec":28,"sem":7},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Transformación digital","tipo":"Certificado de Área","sec":1,"sem":1},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Fundamentos de programación","tipo":"Certificado de Área","sec":3,"sem":1},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Estrategia y ventaja competitiva","tipo":"Certificado de Área","sec":2,"sem":1},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Certificado de Lengua Extranjera 1","tipo":"Certificado Lengua Extranjera","sec":4,"sem":1},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Emprendimiento","tipo":"Certificado de Área","sec":6,"sem":2},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Big Data Analytics","tipo":"Certificado de Área","sec":7,"sem":2},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Administración de operaciones","tipo":"Certificado de Área","sec":5,"sem":2},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Certificado de Lengua Extranjera 2","tipo":"Certificado Lengua Extranjera","sec":8,"sem":2},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Geografía política","tipo":"Certificado Carrera","sec":10,"sem":3},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Estrategias para el comercio global","tipo":"Certificado Carrera","sec":11,"sem":3},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Economía política internacional","tipo":"Certificado Carrera","sec":9,"sem":3},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Certificado de Lengua Extranjera 3","tipo":"Certificado Lengua Extranjera","sec":12,"sem":3},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Sistemas e infraestructura logística","tipo":"Certificado Carrera","sec":13,"sem":4},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Gestión de transportes","tipo":"Certificado Carrera","sec":14,"sem":4},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Administración de la cadena de suministros","tipo":"Certificado Carrera","sec":15,"sem":4},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Certificado de Lengua Extranjera 4","tipo":"Certificado Lengua Extranjera","sec":16,"sem":4},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Tratados internacionales y comercio exterior","tipo":"Certificado Carrera","sec":17,"sem":5},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Documentación y trámites aduanales","tipo":"Certificado Carrera","sec":18,"sem":5},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Compras y desarrollo de proveedores","tipo":"Certificado Carrera","sec":19,"sem":5},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Certificado de Lengua Extranjera 5","tipo":"Certificado Lengua Extranjera","sec":20,"sem":5},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Optariva 1","tipo":"Ruta de Enfoque","sec":21,"sem":6},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Optariva 2","tipo":"Ruta de Enfoque","sec":22,"sem":6},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Optariva 3","tipo":"Ruta de Enfoque","sec":23,"sem":6},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Certificado de Lengua Extranjera 6","tipo":"Certificado Lengua Extranjera","sec":24,"sem":6},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Optariva 4","tipo":"Ruta de Enfoque","sec":25,"sem":7},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Optariva 5","tipo":"Ruta de Enfoque","sec":26,"sem":7},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Optariva 6","tipo":"Ruta de Enfoque","sec":27,"sem":7},{"p":"Licenciatura en Comercio y Negocios Internacionales","cert":"Certificado de Lengua Extranjera 7","tipo":"Certificado Lengua Extranjera","sec":28,"sem":7},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Transformación digital","tipo":"Certificado de Área","sec":1,"sem":1},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Fundamentos de programación","tipo":"Certificado de Área","sec":3,"sem":1},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Estrategia y ventaja competitiva","tipo":"Certificado de Área","sec":2,"sem":1},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Certificado de Lengua Extranjera 1","tipo":"Certificado Lengua Extranjera","sec":4,"sem":1},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Emprendimiento","tipo":"Certificado de Área","sec":6,"sem":2},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Big Data Analytics","tipo":"Certificado de Área","sec":7,"sem":2},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Administración de operaciones","tipo":"Certificado de Área","sec":5,"sem":2},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Certificado de Lengua Extranjera 2","tipo":"Certificado Lengua Extranjera","sec":8,"sem":2},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Legislación fiscal","tipo":"Certificado Carrera","sec":11,"sem":3},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Finanzas corporativas","tipo":"Certificado Carrera","sec":10,"sem":3},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Contabilidad financiera y costos","tipo":"Certificado Carrera","sec":9,"sem":3},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Certificado de Lengua Extranjera 3","tipo":"Certificado Lengua Extranjera","sec":12,"sem":3},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Mercado de Deuda y Capitales","tipo":"Certificado Carrera","sec":13,"sem":4},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Finanzas internacionales","tipo":"Certificado Carrera","sec":15,"sem":4},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Análisis de estados financieros","tipo":"Certificado Carrera","sec":14,"sem":4},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Certificado de Lengua Extranjera 4","tipo":"Certificado Lengua Extranjera","sec":16,"sem":4},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Finanzas Conductuales","tipo":"Certificado Carrera","sec":17,"sem":5},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Auditoría financiera","tipo":"Certificado Carrera","sec":18,"sem":5},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Administración de riesgos y derivados","tipo":"Certificado Carrera","sec":19,"sem":5},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Certificado de Lengua Extranjera 5","tipo":"Certificado Lengua Extranjera","sec":20,"sem":5},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Optariva 1","tipo":"Ruta de Enfoque","sec":21,"sem":6},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Optariva 2","tipo":"Ruta de Enfoque","sec":22,"sem":6},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Optariva 3","tipo":"Ruta de Enfoque","sec":23,"sem":6},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Certificado de Lengua Extranjera 6","tipo":"Certificado Lengua Extranjera","sec":24,"sem":6},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Optariva 4","tipo":"Ruta de Enfoque","sec":25,"sem":7},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Optariva 5","tipo":"Ruta de Enfoque","sec":26,"sem":7},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Optariva 6","tipo":"Ruta de Enfoque","sec":27,"sem":7},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","cert":"Certificado de Lengua Extranjera 7","tipo":"Certificado Lengua Extranjera","sec":28,"sem":7},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Transformación digital","tipo":"Certificado de Área","sec":1,"sem":1},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Fundamentos de programación","tipo":"Certificado de Área","sec":3,"sem":1},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Estrategia y ventaja competitiva","tipo":"Certificado de Área","sec":2,"sem":1},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Certificado de Lengua Extranjera 1","tipo":"Certificado Lengua Extranjera","sec":4,"sem":1},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Emprendimiento","tipo":"Certificado de Área","sec":6,"sem":2},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Big Data Analytics","tipo":"Certificado de Área","sec":7,"sem":2},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Administración de operaciones","tipo":"Certificado de Área","sec":5,"sem":2},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Certificado de Lengua Extranjera 2","tipo":"Certificado Lengua Extranjera","sec":8,"sem":2},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Modelos de negocios","tipo":"Certificado Carrera","sec":11,"sem":3},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Innovación y disrupción","tipo":"Certificado Carrera","sec":9,"sem":3},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Creatividad estratégica","tipo":"Certificado Carrera","sec":10,"sem":3},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Certificado de Lengua Extranjera 3","tipo":"Certificado Lengua Extranjera","sec":12,"sem":3},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Innovación efectiva y oportunidades de negocio","tipo":"Certificado Carrera","sec":15,"sem":4},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Emprendimiento social","tipo":"Certificado Carrera","sec":17,"sem":5},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Diseño de productos","tipo":"Certificado Carrera","sec":18,"sem":5},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Marco legal del emprendimiento","tipo":"Certificado Carrera","sec":13,"sem":4},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Inversión y viabilidad de proyectos","tipo":"Certificado Carrera","sec":19,"sem":5},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Certificado de Lengua Extranjera 5","tipo":"Certificado Lengua Extranjera","sec":20,"sem":5},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Administración del talento humano","tipo":"Certificado Carrera","sec":14,"sem":4},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Certificado de Lengua Extranjera 4","tipo":"Certificado Lengua Extranjera","sec":16,"sem":4},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Optativa 1","tipo":"Ruta de Enfoque","sec":21,"sem":6},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Optativa 2","tipo":"Ruta de Enfoque","sec":22,"sem":6},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Optativa 3","tipo":"Ruta de Enfoque","sec":23,"sem":6},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Certificado de Lengua Extranjera 6","tipo":"Certificado Lengua Extranjera","sec":24,"sem":6},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Optativa 4","tipo":"Ruta de Enfoque","sec":25,"sem":7},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Optativa 5","tipo":"Ruta de Enfoque","sec":26,"sem":7},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Optativa 6","tipo":"Ruta de Enfoque","sec":27,"sem":7},{"p":"Licenciatura en Creación y Desarrollo de Empresas","cert":"Certificado de Lengua Extranjera 7","tipo":"Certificado Lengua Extranjera","sec":28,"sem":7},{"p":"Licenciatura en Derecho","cert":"Teoría del derecho penal y delitos","tipo":"Certificado de Área","sec":3,"sem":1},{"p":"Licenciatura en Derecho","cert":"Introducción al estudio del derecho","tipo":"Certificado de Área","sec":1,"sem":1},{"p":"Licenciatura en Derecho","cert":"Bienes, derechos reales y sucesiones","tipo":"Certificado de Área","sec":2,"sem":1},{"p":"Licenciatura en Derecho","cert":"Certificado de Lengua Extranjera 1","tipo":"Certificado Lengua Extranjera","sec":4,"sem":1},{"p":"Licenciatura en Derecho","cert":"Derecho familiar y su proceso","tipo":"Certificado de Área","sec":6,"sem":2},{"p":"Licenciatura en Derecho","cert":"Derecho de las obligaciones","tipo":"Certificado de Área","sec":5,"sem":2},{"p":"Licenciatura en Derecho","cert":"Derecho constitucional y jurisprudencial","tipo":"Certificado de Área","sec":7,"sem":2},{"p":"Licenciatura en Derecho","cert":"Certificado de Lengua Extranjera 2","tipo":"Certificado Lengua Extranjera","sec":8,"sem":2},{"p":"Licenciatura en Derecho","cert":"Derecho procesal penal","tipo":"Certificado Carrera","sec":10,"sem":3},{"p":"Licenciatura en Derecho","cert":"Derecho mercantil y títulos de crédito","tipo":"Certificado Carrera","sec":11,"sem":3},{"p":"Licenciatura en Derecho","cert":"Derecho internacional público y privado","tipo":"Certificado Carrera","sec":9,"sem":3},{"p":"Licenciatura en Derecho","cert":"Certificado de Lengua Extranjera 3","tipo":"Certificado Lengua Extranjera","sec":12,"sem":3},{"p":"Licenciatura en Derecho","cert":"Derecho laboral y su proceso","tipo":"Certificado Carrera","sec":15,"sem":4},{"p":"Licenciatura en Derecho","cert":"Derecho administrativo y políticas públicas","tipo":"Certificado Carrera","sec":14,"sem":4},{"p":"Licenciatura en Derecho","cert":"Contratos y derecho procesal civil","tipo":"Certificado Carrera","sec":13,"sem":4},{"p":"Licenciatura en Derecho","cert":"Certificado de Lengua Extranjera 4","tipo":"Certificado Lengua Extranjera","sec":16,"sem":4},{"p":"Licenciatura en Derecho","cert":"Juicio de amparo y argumentación","tipo":"Certificado Carrera","sec":19,"sem":5},{"p":"Licenciatura en Derecho","cert":"Derecho fiscal y su proceso","tipo":"Certificado Carrera","sec":18,"sem":5},{"p":"Licenciatura en Derecho","cert":"Contratos y derecho procesal mercantil","tipo":"Certificado Carrera","sec":17,"sem":5},{"p":"Licenciatura en Derecho","cert":"Certificado de Lengua Extranjera 5","tipo":"Certificado Lengua Extranjera","sec":20,"sem":5},{"p":"Licenciatura en Derecho","cert":"Optariva 1","tipo":"Ruta de Enfoque","sec":21,"sem":6},{"p":"Licenciatura en Derecho","cert":"Optariva 2","tipo":"Ruta de Enfoque","sec":22,"sem":6},{"p":"Licenciatura en Derecho","cert":"Optariva 3","tipo":"Ruta de Enfoque","sec":23,"sem":6},{"p":"Licenciatura en Derecho","cert":"Certificado de Lengua Extranjera 6","tipo":"Certificado Lengua Extranjera","sec":24,"sem":6},{"p":"Licenciatura en Derecho","cert":"Optariva 4","tipo":"Ruta de Enfoque","sec":25,"sem":7},{"p":"Licenciatura en Derecho","cert":"Optariva 5","tipo":"Ruta de Enfoque","sec":26,"sem":7},{"p":"Licenciatura en Derecho","cert":"Optariva 6","tipo":"Ruta de Enfoque","sec":27,"sem":7},{"p":"Licenciatura en Derecho","cert":"Certificado de Lengua Extranjera 7","tipo":"Certificado Lengua Extranjera","sec":28,"sem":7},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Introducción a la animación","tipo":"Certificado de Área","sec":2,"sem":1},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Fundamentos de programación","tipo":"Certificado de Área","sec":3,"sem":1},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Fundamentos de diseño gráfico","tipo":"Certificado de Área","sec":1,"sem":1},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Certificado de Lengua Extranjera 1","tipo":"Certificado Lengua Extranjera","sec":4,"sem":1},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Producción audiovisual","tipo":"Certificado de Área","sec":7,"sem":2},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Pre-producción para la animación","tipo":"Certificado de Área","sec":6,"sem":2},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Fundamentos de dibujo y representación","tipo":"Certificado de Área","sec":5,"sem":2},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Certificado de Lengua Extranjera 2","tipo":"Certificado Lengua Extranjera","sec":8,"sem":2},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Ilustración digital","tipo":"Certificado Carrera","sec":9,"sem":3},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Desarrollo de aplicaciones móviles","tipo":"Certificado Carrera","sec":11,"sem":3},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Animación 2D","tipo":"Certificado Carrera","sec":10,"sem":3},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Certificado de Lengua Extranjera 3","tipo":"Certificado Lengua Extranjera","sec":12,"sem":3},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"UX/UI","tipo":"Certificado Carrera","sec":15,"sem":4},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Modelación y animación 3D","tipo":"Certificado Carrera","sec":14,"sem":4},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Diseño para medios digitales","tipo":"Certificado Carrera","sec":13,"sem":4},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Certificado de Lengua Extranjera 4","tipo":"Certificado Lengua Extranjera","sec":16,"sem":4},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Mercadotecnia digital","tipo":"Certificado Carrera","sec":19,"sem":5},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Identidad corporativa","tipo":"Certificado Carrera","sec":17,"sem":5},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Efectos visuales","tipo":"Certificado Carrera","sec":18,"sem":5},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Certificado de Lengua Extranjera 5","tipo":"Certificado Lengua Extranjera","sec":20,"sem":5},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Optativa 1","tipo":"Ruta de Enfoque","sec":21,"sem":6},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Optativa 2","tipo":"Ruta de Enfoque","sec":22,"sem":6},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Optativa 3","tipo":"Ruta de Enfoque","sec":23,"sem":6},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Certificado de Lengua Extranjera 6","tipo":"Certificado Lengua Extranjera","sec":24,"sem":6},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Optativa 4","tipo":"Ruta de Enfoque","sec":25,"sem":7},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Optativa 5","tipo":"Ruta de Enfoque","sec":26,"sem":7},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Optativa 6","tipo":"Ruta de Enfoque","sec":27,"sem":7},{"p":"Licenciatura en Diseño Gráfico y Animación","cert":"Certificado de Lengua Extranjera 7","tipo":"Certificado Lengua Extranjera","sec":28,"sem":7},{"p":"Licenciatura en Gastronomía Internacional","cert":"Transformación digital","tipo":"Certificado de Área","sec":3,"sem":1},{"p":"Licenciatura en Gastronomía Internacional","cert":"Gestión de alimentos y bebidas","tipo":"Certificado de Área","sec":2,"sem":1},{"p":"Licenciatura en Gastronomía Internacional","cert":"Fundamentos culinarios","tipo":"Certificado de Área","sec":1,"sem":1},{"p":"Licenciatura en Gastronomía Internacional","cert":"Certificado de Lengua Extranjera 1","tipo":"Certificado Lengua Extranjera","sec":4,"sem":1},{"p":"Licenciatura en Gastronomía Internacional","cert":"Sanidad e higiene de los alimentos","tipo":"Certificado de Área","sec":6,"sem":2},{"p":"Licenciatura en Gastronomía Internacional","cert":"Emprendimiento","tipo":"Certificado de Área","sec":7,"sem":2},{"p":"Licenciatura en Gastronomía Internacional","cert":"Cocina fría","tipo":"Certificado de Área","sec":5,"sem":2},{"p":"Licenciatura en Gastronomía Internacional","cert":"Certificado de Lengua Extranjera 2","tipo":"Certificado Lengua Extranjera","sec":8,"sem":2},{"p":"Licenciatura en Gastronomía Internacional","cert":"Servicio y experiencias","tipo":"Certificado Carrera","sec":11,"sem":3},{"p":"Licenciatura en Gastronomía Internacional","cert":"Panadería, repostería y confitería","tipo":"Certificado Carrera","sec":9,"sem":3},{"p":"Licenciatura en Gastronomía Internacional","cert":"Ciencia y servicio de alimentos","tipo":"Certificado Carrera","sec":10,"sem":3},{"p":"Licenciatura en Gastronomía Internacional","cert":"Certificado de Lengua Extranjera 3","tipo":"Certificado Lengua Extranjera","sec":12,"sem":3},{"p":"Licenciatura en Gastronomía Internacional","cert":"Tecnología de los alimentos","tipo":"Certificado Carrera","sec":14,"sem":4},{"p":"Licenciatura en Gastronomía Internacional","cert":"Planeación de menús y banquetes","tipo":"Certificado Carrera","sec":15,"sem":4},{"p":"Licenciatura en Gastronomía Internacional","cert":"Enología y vitivinicultura","tipo":"Certificado Carrera","sec":13,"sem":4},{"p":"Licenciatura en Gastronomía Internacional","cert":"Certificado de Lengua Extranjera 4","tipo":"Certificado Lengua Extranjera","sec":16,"sem":4},{"p":"Licenciatura en Gastronomía Internacional","cert":"Patromonio gastronómico de México","tipo":"Certificado Carrera","sec":17,"sem":5},{"p":"Licenciatura en Gastronomía Internacional","cert":"Diseño de operaciones culinarias","tipo":"Certificado Carrera","sec":18,"sem":5},{"p":"Licenciatura en Gastronomía Internacional","cert":"Catering y relaciones públicas","tipo":"Certificado Carrera","sec":19,"sem":5},{"p":"Licenciatura en Gastronomía Internacional","cert":"Certificado de Lengua Extranjera 5","tipo":"Certificado Lengua Extranjera","sec":20,"sem":5},{"p":"Licenciatura en Gastronomía Internacional","cert":"Optativa 1","tipo":"Ruta de Enfoque","sec":21,"sem":6},{"p":"Licenciatura en Gastronomía Internacional","cert":"Optativa 2","tipo":"Ruta de Enfoque","sec":22,"sem":6},{"p":"Licenciatura en Gastronomía Internacional","cert":"Optativa 3","tipo":"Ruta de Enfoque","sec":23,"sem":6},{"p":"Licenciatura en Gastronomía Internacional","cert":"Certificado de Lengua Extranjera 6","tipo":"Certificado Lengua Extranjera","sec":24,"sem":6},{"p":"Licenciatura en Gastronomía Internacional","cert":"Optativa 4","tipo":"Ruta de Enfoque","sec":25,"sem":7},{"p":"Licenciatura en Gastronomía Internacional","cert":"Optativa 5","tipo":"Ruta de Enfoque","sec":26,"sem":7},{"p":"Licenciatura en Gastronomía Internacional","cert":"Optativa 6","tipo":"Ruta de Enfoque","sec":27,"sem":7},{"p":"Licenciatura en Gastronomía Internacional","cert":"Certificado de Lengua Extranjera 7","tipo":"Certificado Lengua Extranjera","sec":28,"sem":7},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Probabilidad y estadística para ciencia de datos","tipo":"Certificado de Área","sec":3,"sem":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Fundamentos de programación","tipo":"Certificado de Área","sec":1,"sem":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Computación en la nube","tipo":"Certificado de Área","sec":2,"sem":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Certificado de Lengua Extranjera 1","tipo":"Certificado de Lengua Extranjera","sec":4,"sem":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Sistemas operativos","tipo":"Certificado de Área","sec":6,"sem":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Programación orientada a objetos","tipo":"Certificado de Área","sec":5,"sem":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Ciencia de datos","tipo":"Certificado de Área","sec":7,"sem":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Certificado de Lengua Extranjera 2","tipo":"Certificado de Lengua Extranjera","sec":8,"sem":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Metodologías ágiles","tipo":"Certificado Carrera","sec":11,"sem":3},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Estructuras de datos","tipo":"Certificado Carrera","sec":9,"sem":3},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Bases de datos","tipo":"Certificado Carrera","sec":10,"sem":3},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Certificado de Lengua Extranjera 3","tipo":"Certificado de Lengua Extranjera","sec":12,"sem":3},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Gestión de Redes","tipo":"Certificado Carrera","sec":14,"sem":4},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Fundamentos de DevOps","tipo":"Certificado Carrera","sec":15,"sem":4},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Desarrollo full stack","tipo":"Certificado Carrera","sec":13,"sem":4},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Certificado de Lengua Extranjera 4","tipo":"Certificado de Lengua Extranjera","sec":16,"sem":4},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Ingeniería de software","tipo":"Certificado Carrera","sec":18,"sem":5},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Desarrollo de aplicaciones móviles","tipo":"Certificado Carrera","sec":17,"sem":5},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Certificado de Lengua Extranjera 5","tipo":"Certificado de Lengua Extranjera","sec":20,"sem":5},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Ciberseguridad","tipo":"Certificado Carrera","sec":19,"sem":5},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Optativa 1","tipo":"Ruta de Enfoque","sec":21,"sem":6},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Optativa 2","tipo":"Ruta de Enfoque","sec":22,"sem":6},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Optativa 3","tipo":"Ruta de Enfoque","sec":23,"sem":6},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Optativa 4","tipo":"Ruta de Enfoque","sec":25,"sem":7},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Optativa 5","tipo":"Ruta de Enfoque","sec":26,"sem":7},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Optativa 6","tipo":"Ruta de Enfoque","sec":27,"sem":7},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Certificado de Lengua Extranjera 6","tipo":"Certificado de Lengua Extranjera","sec":24,"sem":6},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","cert":"Certificado de Lengua Extranjera 7","tipo":"Certificado de Lengua Extranjera","sec":28,"sem":7},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Fundamentos de programación","tipo":"Certificado de Área","sec":2,"sem":1},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Economía","tipo":"Certificado de Área","sec":3,"sem":1},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Ciencias de la ingeniería","tipo":"Certificado de Área","sec":1,"sem":1},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Certificado de Lengua Extranjera 1","tipo":"Certificado de Lengua Extranjera","sec":4,"sem":1},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Probabilidad y estadística para ciencia de datos","tipo":"Certificado de Área","sec":7,"sem":2},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Fundamentos de logística y cadena de suministros","tipo":"Certificado de Área","sec":5,"sem":2},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Administración de operaciones","tipo":"Certificado de Área","sec":6,"sem":2},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Certificado de Lengua Extranjera 2","tipo":"Certificado de Lengua Extranjera","sec":8,"sem":2},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Transporte y distribución","tipo":"Certificado Carrera","sec":9,"sem":3},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Gestión de inventarios","tipo":"Certificado Carrera","sec":10,"sem":3},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Cadena de valor adaptativa y logística","tipo":"Certificado Carrera","sec":11,"sem":3},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Certificado de Lengua Extranjera 3","tipo":"Certificado de Lengua Extranjera","sec":12,"sem":3},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Tratados internacionales y comercio exterior","tipo":"Certificado Carrera","sec":15,"sem":4},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Tecnologías de información logística","tipo":"Certificado Carrera","sec":14,"sem":4},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Gestión de proyectos logísticos","tipo":"Certificado Carrera","sec":13,"sem":4},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Certificado de Lengua Extranjera 4","tipo":"Certificado de Lengua Extranjera","sec":16,"sem":4},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Optimización de la cadena de valor","tipo":"Certificado Carrera","sec":19,"sem":5},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Gestión de riesgos y contingencias","tipo":"Certificado Carrera","sec":17,"sem":5},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Empaque y clasificación de materiales","tipo":"Certificado Carrera","sec":18,"sem":5},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Certificado de Lengua Extranjera 5","tipo":"Certificado de Lengua Extranjera","sec":20,"sem":5},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Optativa 1","tipo":"Ruta de Enfoque","sec":21,"sem":6},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Optativa 2","tipo":"Ruta de Enfoque","sec":22,"sem":6},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Optativa 3","tipo":"Ruta de Enfoque","sec":23,"sem":6},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Certificado de Lengua Extranjera 6","tipo":"Certificado de Lengua Extranjera","sec":24,"sem":6},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Optativa 4","tipo":"Ruta de Enfoque","sec":25,"sem":7},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Optativa 5","tipo":"Ruta de Enfoque","sec":26,"sem":7},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Optativa 6","tipo":"Ruta de Enfoque","sec":27,"sem":7},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","cert":"Certificado de Lengua Extranjera 7","tipo":"Certificado de Lengua Extranjera","sec":28,"sem":7},{"p":"Licenciatura en Ingeniería Industrial","cert":"Fundamentos de programación","tipo":"Certificado de Área","sec":2,"sem":1},{"p":"Licenciatura en Ingeniería Industrial","cert":"Dibujo computarizado","tipo":"Certificado de Área","sec":3,"sem":1},{"p":"Licenciatura en Ingeniería Industrial","cert":"Ciencias de la ingeniería","tipo":"Certificado de Área","sec":1,"sem":1},{"p":"Licenciatura en Ingeniería Industrial","cert":"Certificado de Lengua Extranjera 1","tipo":"Certificado de Lengua Extranjera","sec":4,"sem":1},{"p":"Licenciatura en Ingeniería Industrial","cert":"Procesos de manufactura","tipo":"Certificado de Área","sec":5,"sem":2},{"p":"Licenciatura en Ingeniería Industrial","cert":"Probabilidad y estadística para ciencia de datos","tipo":"Certificado de Área","sec":7,"sem":2},{"p":"Licenciatura en Ingeniería Industrial","cert":"Administración de operaciones","tipo":"Certificado de Área","sec":6,"sem":2},{"p":"Licenciatura en Ingeniería Industrial","cert":"Certificado de Lengua Extranjera 2","tipo":"Certificado de Lengua Extranjera","sec":8,"sem":2},{"p":"Licenciatura en Ingeniería Industrial","cert":"Ingeniería de precisión","tipo":"Certificado Carrera","sec":9,"sem":3},{"p":"Licenciatura en Ingeniería Industrial","cert":"Diseño del trabajo y entornos industriales","tipo":"Certificado Carrera","sec":10,"sem":3},{"p":"Licenciatura en Ingeniería Industrial","cert":"Cadena de valor adaptativa y logística","tipo":"Certificado Carrera","sec":11,"sem":3},{"p":"Licenciatura en Ingeniería Industrial","cert":"Certificado de Lengua Extranjera 3","tipo":"Certificado de Lengua Extranjera","sec":12,"sem":3},{"p":"Licenciatura en Ingeniería Industrial","cert":"Herramientas para la medición y mejora de la producción","tipo":"Certificado Carrera","sec":15,"sem":4},{"p":"Licenciatura en Ingeniería Industrial","cert":"Gestión de operaciones y producción","tipo":"Certificado Carrera","sec":13,"sem":4},{"p":"Licenciatura en Ingeniería Industrial","cert":"Excelencia operacional y sustentabilidad","tipo":"Certificado Carrera","sec":14,"sem":4},{"p":"Licenciatura en Ingeniería Industrial","cert":"Certificado de Lengua Extranjera 4","tipo":"Certificado de Lengua Extranjera","sec":16,"sem":4},{"p":"Licenciatura en Ingeniería Industrial","cert":"Simulación de eventos discretos","tipo":"Certificado Carrera","sec":19,"sem":5},{"p":"Licenciatura en Ingeniería Industrial","cert":"Gestión de la calidad","tipo":"Certificado Carrera","sec":17,"sem":5},{"p":"Licenciatura en Ingeniería Industrial","cert":"Evaluación de Proyectos","tipo":"Certificado Carrera","sec":18,"sem":5},{"p":"Licenciatura en Ingeniería Industrial","cert":"Certificado de Lengua Extranjera 5","tipo":"Certificado de Lengua Extranjera","sec":20,"sem":5},{"p":"Licenciatura en Ingeniería Industrial","cert":"Optativa 1","tipo":"Ruta de Enfoque","sec":21,"sem":6},{"p":"Licenciatura en Ingeniería Industrial","cert":"Optativa 2","tipo":"Ruta de Enfoque","sec":22,"sem":6},{"p":"Licenciatura en Ingeniería Industrial","cert":"Optativa 3","tipo":"Ruta de Enfoque","sec":23,"sem":6},{"p":"Licenciatura en Ingeniería Industrial","cert":"Certificado de Lengua Extranjera 6","tipo":"Certificado de Lengua Extranjera","sec":24,"sem":6},{"p":"Licenciatura en Ingeniería Industrial","cert":"Optativa 4","tipo":"Ruta de Enfoque","sec":25,"sem":7},{"p":"Licenciatura en Ingeniería Industrial","cert":"Optativa 5","tipo":"Ruta de Enfoque","sec":26,"sem":7},{"p":"Licenciatura en Ingeniería Industrial","cert":"Optativa 6","tipo":"Ruta de Enfoque","sec":27,"sem":7},{"p":"Licenciatura en Ingeniería Industrial","cert":"Certificado de Lengua Extranjera 7","tipo":"Certificado de Lengua Extranjera","sec":28,"sem":7},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Fundamentos de programación","tipo":"Certificado de Área","sec":2,"sem":1},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Dibujo computarizado","tipo":"Certificado de Área","sec":3,"sem":1},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Ciencias de la ingeniería","tipo":"Certificado de Área","sec":1,"sem":1},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Certificado de Lengua Extranjera 1","tipo":"Certificado de Lengua Extranjera","sec":4,"sem":1},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Procesos de manufactura","tipo":"Certificado de Área","sec":5,"sem":2},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Probabilidad y estadística para ciencia de datos","tipo":"Certificado de Área","sec":7,"sem":2},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Administración de operaciones","tipo":"Certificado de Área","sec":6,"sem":2},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Certificado de Lengua Extranjera 2","tipo":"Certificado de Lengua Extranjera","sec":8,"sem":2},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Mecánica de materiales","tipo":"Certificado Carrera","sec":9,"sem":3},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Matemáticas avanzadas","tipo":"Certificado Carrera","sec":10,"sem":3},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Circuitos eléctricos y electrónicos","tipo":"Certificado Carrera","sec":11,"sem":3},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Certificado de Lengua Extranjera 3","tipo":"Certificado de Lengua Extranjera","sec":12,"sem":3},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Ingeniería de control","tipo":"Certificado Carrera","sec":13,"sem":4},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Diseño mecatrónico","tipo":"Certificado Carrera","sec":15,"sem":4},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Automatización industrial","tipo":"Certificado Carrera","sec":14,"sem":4},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Certificado de Lengua Extranjera 4","tipo":"Certificado de Lengua Extranjera","sec":16,"sem":4},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Robótica industrial","tipo":"Certificado Carrera","sec":18,"sem":5},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Diseño de redes industriales","tipo":"Certificado Carrera","sec":19,"sem":5},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Control digital","tipo":"Certificado Carrera","sec":17,"sem":5},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Certificado de Lengua Extranjera 5","tipo":"Certificado de Lengua Extranjera","sec":20,"sem":5},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Optativa 1","tipo":"Ruta de Enfoque","sec":21,"sem":6},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Optativa 2","tipo":"Ruta de Enfoque","sec":22,"sem":6},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Optativa 3","tipo":"Ruta de Enfoque","sec":23,"sem":6},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Certificado de Lengua Extranjera 6","tipo":"Certificado de Lengua Extranjera","sec":24,"sem":6},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Optativa 4","tipo":"Ruta de Enfoque","sec":25,"sem":7},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Optativa 5","tipo":"Ruta de Enfoque","sec":26,"sem":7},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Optativa 6","tipo":"Ruta de Enfoque","sec":27,"sem":7},{"p":"Licenciatura en Ingeniería Mecatrónica","cert":"Certificado de Lengua Extranjera 7","tipo":"Certificado de Lengua Extranjera","sec":28,"sem":7},{"p":"Licenciatura en Mercadotecnia","cert":"Transformación digital","tipo":"Certificado de Área","sec":1,"sem":1},{"p":"Licenciatura en Mercadotecnia","cert":"Fundamentos de programación","tipo":"Certificado de Área","sec":3,"sem":1},{"p":"Licenciatura en Mercadotecnia","cert":"Estrategia y ventaja competitiva","tipo":"Certificado de Área","sec":2,"sem":1},{"p":"Licenciatura en Mercadotecnia","cert":"Certificado de Lengua Extranjera 1","tipo":"Certificado de Lengua Extranjera","sec":4,"sem":1},{"p":"Licenciatura en Mercadotecnia","cert":"Emprendimiento","tipo":"Certificado de Área","sec":6,"sem":2},{"p":"Licenciatura en Mercadotecnia","cert":"Big Data Analytics","tipo":"Certificado de Área","sec":7,"sem":2},{"p":"Licenciatura en Mercadotecnia","cert":"Administración de operaciones","tipo":"Certificado de Área","sec":5,"sem":2},{"p":"Licenciatura en Mercadotecnia","cert":"Certificado de Lengua Extranjera 2","tipo":"Certificado de Lengua Extranjera","sec":8,"sem":2},{"p":"Licenciatura en Mercadotecnia","cert":"Mercados y consumidores","tipo":"Certificado Carrera","sec":9,"sem":3},{"p":"Licenciatura en Mercadotecnia","cert":"La oferta de valor - productos y servicios","tipo":"Certificado Carrera","sec":11,"sem":3},{"p":"Licenciatura en Mercadotecnia","cert":"Fundamentos de investigación de mercados","tipo":"Certificado Carrera","sec":10,"sem":3},{"p":"Licenciatura en Mercadotecnia","cert":"Certificado de Lengua Extranjera 3","tipo":"Certificado de Lengua Extranjera","sec":12,"sem":3},{"p":"Licenciatura en Mercadotecnia","cert":"Distribución de la oferta de valor","tipo":"Certificado Carrera","sec":15,"sem":4},{"p":"Licenciatura en Mercadotecnia","cert":"Administración de precios","tipo":"Certificado Carrera","sec":14,"sem":4},{"p":"Licenciatura en Mercadotecnia","cert":"Administración de marcas","tipo":"Certificado Carrera","sec":13,"sem":4},{"p":"Licenciatura en Mercadotecnia","cert":"Certificado de Lengua Extranjera 4","tipo":"Certificado de Lengua Extranjera","sec":16,"sem":4},{"p":"Licenciatura en Mercadotecnia","cert":"Estrategias de redes sociales","tipo":"Certificado Carrera","sec":18,"sem":5},{"p":"Licenciatura en Mercadotecnia","cert":"Creación de contenidos y Storytelling","tipo":"Certificado Carrera","sec":19,"sem":5},{"p":"Licenciatura en Mercadotecnia","cert":"Comunicación de la oferta de valor","tipo":"Certificado Carrera","sec":17,"sem":5},{"p":"Licenciatura en Mercadotecnia","cert":"Certificado de Lengua Extranjera 5","tipo":"Certificado de Lengua Extranjera","sec":20,"sem":5},{"p":"Licenciatura en Mercadotecnia","cert":"Optativa 1","tipo":"Ruta de Enfoque","sec":21,"sem":6},{"p":"Licenciatura en Mercadotecnia","cert":"Optativa 2","tipo":"Ruta de Enfoque","sec":22,"sem":6},{"p":"Licenciatura en Mercadotecnia","cert":"Optativa 3","tipo":"Ruta de Enfoque","sec":23,"sem":6},{"p":"Licenciatura en Mercadotecnia","cert":"Certificado de Lengua Extranjera 6","tipo":"Certificado de Lengua Extranjera","sec":24,"sem":6},{"p":"Licenciatura en Mercadotecnia","cert":"Optativa 4","tipo":"Ruta de Enfoque","sec":25,"sem":7},{"p":"Licenciatura en Mercadotecnia","cert":"Optativa 5","tipo":"Ruta de Enfoque","sec":26,"sem":7},{"p":"Licenciatura en Mercadotecnia","cert":"Optativa 6","tipo":"Ruta de Enfoque","sec":27,"sem":7},{"p":"Licenciatura en Mercadotecnia","cert":"Certificado de Lengua Extranjera 7","tipo":"Certificado de Lengua Extranjera","sec":28,"sem":7}],"troncalidad":{"1":[{"cert":"Certificado de Lengua Extranjera 1","tipo":"Certificado de Lengua Extranjera","programas":["Licenciatura en Administración de Empresas","Licenciatura en Comercio y Negocios Internacionales","Licenciatura en Contabilidad y Estrategia Financiera","Licenciatura en Creación y Desarrollo de Empresas","Licenciatura en Derecho","Licenciatura en Diseño Gráfico y Animación","Licenciatura en Gastronomía Internacional","Licenciatura en Ingeniería Industrial","Licenciatura en Ingeniería Mecatrónica","Licenciatura en Ingeniería en Desarrollo de Software","Licenciatura en Ingeniería en Logística y Cadena de Suministro","Licenciatura en Mercadotecnia"]},{"cert":"Fundamentos de programación","tipo":"Certificado de Área","programas":["Licenciatura en Administración de Empresas","Licenciatura en Comercio y Negocios Internacionales","Licenciatura en Contabilidad y Estrategia Financiera","Licenciatura en Creación y Desarrollo de Empresas","Licenciatura en Diseño Gráfico y Animación","Licenciatura en Ingeniería Industrial","Licenciatura en Ingeniería Mecatrónica","Licenciatura en Ingeniería en Desarrollo de Software","Licenciatura en Ingeniería en Logística y Cadena de Suministro","Licenciatura en Mercadotecnia"]},{"cert":"Transformación digital","tipo":"Certificado de Área","programas":["Licenciatura en Administración de Empresas","Licenciatura en Comercio y Negocios Internacionales","Licenciatura en Contabilidad y Estrategia Financiera","Licenciatura en Creación y Desarrollo de Empresas","Licenciatura en Gastronomía Internacional","Licenciatura en Mercadotecnia"]},{"cert":"Estrategia y ventaja competitiva","tipo":"Certificado de Área","programas":["Licenciatura en Administración de Empresas","Licenciatura en Comercio y Negocios Internacionales","Licenciatura en Contabilidad y Estrategia Financiera","Licenciatura en Creación y Desarrollo de Empresas","Licenciatura en Mercadotecnia"]},{"cert":"Ciencias de la ingeniería","tipo":"Certificado de Área","programas":["Licenciatura en Ingeniería Industrial","Licenciatura en Ingeniería Mecatrónica","Licenciatura en Ingeniería en Logística y Cadena de Suministro"]},{"cert":"Dibujo computarizado","tipo":"Certificado de Área","programas":["Licenciatura en Ingeniería Industrial","Licenciatura en Ingeniería Mecatrónica"]}],"2":[{"cert":"Certificado de Lengua Extranjera 2","tipo":"Certificado de Lengua Extranjera","programas":["Licenciatura en Administración de Empresas","Licenciatura en Comercio y Negocios Internacionales","Licenciatura en Contabilidad y Estrategia Financiera","Licenciatura en Creación y Desarrollo de Empresas","Licenciatura en Derecho","Licenciatura en Diseño Gráfico y Animación","Licenciatura en Gastronomía Internacional","Licenciatura en Ingeniería Industrial","Licenciatura en Ingeniería Mecatrónica","Licenciatura en Ingeniería en Desarrollo de Software","Licenciatura en Ingeniería en Logística y Cadena de Suministro","Licenciatura en Mercadotecnia"]},{"cert":"Administración de operaciones","tipo":"Certificado de Área","programas":["Licenciatura en Administración de Empresas","Licenciatura en Comercio y Negocios Internacionales","Licenciatura en Contabilidad y Estrategia Financiera","Licenciatura en Creación y Desarrollo de Empresas","Licenciatura en Ingeniería Industrial","Licenciatura en Ingeniería Mecatrónica","Licenciatura en Ingeniería en Logística y Cadena de Suministro","Licenciatura en Mercadotecnia"]},{"cert":"Emprendimiento","tipo":"Certificado de Área","programas":["Licenciatura en Administración de Empresas","Licenciatura en Comercio y Negocios Internacionales","Licenciatura en Contabilidad y Estrategia Financiera","Licenciatura en Creación y Desarrollo de Empresas","Licenciatura en Gastronomía Internacional","Licenciatura en Mercadotecnia"]},{"cert":"Big Data Analytics","tipo":"Certificado de Área","programas":["Licenciatura en Administración de Empresas","Licenciatura en Comercio y Negocios Internacionales","Licenciatura en Contabilidad y Estrategia Financiera","Licenciatura en Creación y Desarrollo de Empresas","Licenciatura en Mercadotecnia"]},{"cert":"Probabilidad y estadística para ciencia de datos","tipo":"Certificado de Área","programas":["Licenciatura en Ingeniería Industrial","Licenciatura en Ingeniería Mecatrónica","Licenciatura en Ingeniería en Logística y Cadena de Suministro"]},{"cert":"Procesos de manufactura","tipo":"Certificado de Área","programas":["Licenciatura en Ingeniería Industrial","Licenciatura en Ingeniería Mecatrónica"]}],"3":[{"cert":"Certificado de Lengua Extranjera 3","tipo":"Certificado de Lengua Extranjera","programas":["Licenciatura en Administración de Empresas","Licenciatura en Comercio y Negocios Internacionales","Licenciatura en Contabilidad y Estrategia Financiera","Licenciatura en Creación y Desarrollo de Empresas","Licenciatura en Derecho","Licenciatura en Diseño Gráfico y Animación","Licenciatura en Gastronomía Internacional","Licenciatura en Ingeniería Industrial","Licenciatura en Ingeniería Mecatrónica","Licenciatura en Ingeniería en Desarrollo de Software","Licenciatura en Ingeniería en Logística y Cadena de Suministro","Licenciatura en Mercadotecnia"]},{"cert":"Cadena de valor adaptativa y logística","tipo":"Certificado Carrera","programas":["Licenciatura en Ingeniería Industrial","Licenciatura en Ingeniería en Logística y Cadena de Suministro"]}],"4":[{"cert":"Certificado de Lengua Extranjera 4","tipo":"Certificado de Lengua Extranjera","programas":["Licenciatura en Administración de Empresas","Licenciatura en Comercio y Negocios Internacionales","Licenciatura en Contabilidad y Estrategia Financiera","Licenciatura en Creación y Desarrollo de Empresas","Licenciatura en Derecho","Licenciatura en Diseño Gráfico y Animación","Licenciatura en Gastronomía Internacional","Licenciatura en Ingeniería Industrial","Licenciatura en Ingeniería Mecatrónica","Licenciatura en Ingeniería en Desarrollo de Software","Licenciatura en Ingeniería en Logística y Cadena de Suministro","Licenciatura en Mercadotecnia"]},{"cert":"Análisis de estados financieros","tipo":"Certificado Carrera","programas":["Licenciatura en Administración de Empresas","Licenciatura en Contabilidad y Estrategia Financiera"]}],"5":[{"cert":"Certificado de Lengua Extranjera 5","tipo":"Certificado de Lengua Extranjera","programas":["Licenciatura en Administración de Empresas","Licenciatura en Comercio y Negocios Internacionales","Licenciatura en Contabilidad y Estrategia Financiera","Licenciatura en Creación y Desarrollo de Empresas","Licenciatura en Derecho","Licenciatura en Diseño Gráfico y Animación","Licenciatura en Gastronomía Internacional","Licenciatura en Ingeniería Industrial","Licenciatura en Ingeniería Mecatrónica","Licenciatura en Ingeniería en Desarrollo de Software","Licenciatura en Ingeniería en Logística y Cadena de Suministro","Licenciatura en Mercadotecnia"]},{"cert":"Compras y desarrollo de proveedores","tipo":"Certificado Carrera","programas":["Licenciatura en Administración de Empresas","Licenciatura en Comercio y Negocios Internacionales"]}]},"rutasEnfoque":[{"p":"Licenciatura en Mercadotecnia","ruta":"Estrategia Publicitaria","cert":"Diseño de productos","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Mercadotecnia","ruta":"Estrategia Publicitaria","cert":"UX/UI","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Mercadotecnia","ruta":"Estrategia Publicitaria","cert":"Sociología del consumo","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Mercadotecnia","ruta":"Estrategia Publicitaria","cert":"Publicidad","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Mercadotecnia","ruta":"Estrategia Publicitaria","cert":"Diseño para medios digitales","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Mercadotecnia","ruta":"Estrategia Publicitaria","cert":"Comercio detallista","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Mercadotecnia","ruta":"Estrategías de Mercadotecnia en Buscadores y Comercio Electrónico","cert":"Analítica digital","opt":"Optativa 6","reut":2},{"p":"Licenciatura en Mercadotecnia","ruta":"Estrategías de Mercadotecnia en Buscadores y Comercio Electrónico","cert":"Serch engine optimization (SEO)","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Mercadotecnia","ruta":"Estrategías de Mercadotecnia en Buscadores y Comercio Electrónico","cert":"Serch engine marketin (SEM)","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Mercadotecnia","ruta":"Estrategías de Mercadotecnia en Buscadores y Comercio Electrónico","cert":"Marketing automation","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Mercadotecnia","ruta":"Estrategías de Mercadotecnia en Buscadores y Comercio Electrónico","cert":"Growth hacking","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Mercadotecnia","ruta":"Estrategías de Mercadotecnia en Buscadores y Comercio Electrónico","cert":"Comercio electrónico","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Mercadotecnia","ruta":"Gestión de ventas estratégicas","cert":"Servicios y experiencia al cliente","opt":"Optativa 5","reut":3},{"p":"Licenciatura en Mercadotecnia","ruta":"Gestión de ventas estratégicas","cert":"Administración y promoción de ventas","opt":"Optativa 6","reut":3},{"p":"Licenciatura en Mercadotecnia","ruta":"Gestión de ventas estratégicas","cert":"Negocioción y comunicación comercial","opt":"Optativa 1","reut":2},{"p":"Licenciatura en Mercadotecnia","ruta":"Gestión de ventas estratégicas","cert":"Habilidades para la venta","opt":"Optativa 3","reut":2},{"p":"Licenciatura en Mercadotecnia","ruta":"Gestión de ventas estratégicas","cert":"Administración de equipos de venta","opt":"Optativa 4","reut":2},{"p":"Licenciatura en Mercadotecnia","ruta":"Gestión de ventas estratégicas","cert":"Administración de cuentas claves","opt":"Optativa 2","reut":2},{"p":"Licenciatura en Mercadotecnia","ruta":"Inteligencia de mercados","cert":"Visualización de datos y storytelling","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Mercadotecnia","ruta":"Inteligencia de mercados","cert":"Métodos de investigación cuantitativa","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Mercadotecnia","ruta":"Inteligencia de mercados","cert":"Métodos de investigación cualitativa","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Mercadotecnia","ruta":"Inteligencia de mercados","cert":"estadística multivariante","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Mercadotecnia","ruta":"Inteligencia de mercados","cert":"Estadística descriptiva e inferencial","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Mercadotecnia","ruta":"Inteligencia de mercados","cert":"Analítica aplicada de marketing","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Automatización Industrial","cert":"Sistemas de visión y procesamiento de imágenes","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Automatización Industrial","cert":"Simulación de procesos y gemelos digitales","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Automatización Industrial","cert":"Robótica móvil","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Automatización Industrial","cert":"Robótica Avanzada","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Automatización Industrial","cert":"Programación de PLC","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Automatización Industrial","cert":"Internet Industrial de las cosas y sistemas embenidos","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Diseño de Procesos sostenibles de manufactura","cert":"Diseño de productos eco innovadores","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Diseño de Procesos sostenibles de manufactura","cert":"Tecnología de baterías y almacenamiento","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Diseño de Procesos sostenibles de manufactura","cert":"Procesos de manufactura y gestión de residuos","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Diseño de Procesos sostenibles de manufactura","cert":"Materiales sostenibles","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Diseño de Procesos sostenibles de manufactura","cert":"Automatización verde en la manufactura","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Diseño de Procesos sostenibles de manufactura","cert":"Análisis y evaluación de ciclo de vida y ecoeficiencia","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Inteligencia Artificial","cert":"Algoritmos de aprendizaje automatico","opt":"Optativa 3","reut":2},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Inteligencia Artificial","cert":"Inteligencia artificial","opt":"Optativa 2","reut":3},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Inteligencia Artificial","cert":"Sistemas de visión artificial","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Inteligencia Artificial","cert":"Predicción de fallas para mantenimientos","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Inteligencia Artificial","cert":"Optimización de trayectorias de robots","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Inteligencia Artificial","cert":"Ciencia de Datos","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Mecatrónica Avanzada","cert":"Fundamentos de gestión de proyectos","opt":"Optativa 3","reut":2},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Mecatrónica Avanzada","cert":"Sistemas hidráulicos y neumáticos","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Mecatrónica Avanzada","cert":"Integración de sistemas mecatrónicos","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Mecatrónica Avanzada","cert":"Implementación y otimización en manufactura","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Mecatrónica Avanzada","cert":"Fudamentos de planificación y diseño","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Mecatrónica Avanzada","cert":"Diseño de celdas de manufactura","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Semiconducotes y Micro Manufactura","cert":"Teoría de dispositivos semiconducotres","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Semiconducotes y Micro Manufactura","cert":"Manufactura de empaquetado de semiconducotores","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Semiconducotes y Micro Manufactura","cert":"Introducción al empaquetado de semiconductores","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Semiconducotes y Micro Manufactura","cert":"Fundamentos de ciencia e ingeniería de los materiales","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Semiconducotes y Micro Manufactura","cert":"Empaquetado de semiconductores avanzado","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Semiconducotes y Micro Manufactura","cert":"Análisis de Elemento finito","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Sistemas de Control","cert":"Automatización y control de procesos de fabricación","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Sistemas de Control","cert":"Sistemas de control no lineales","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Sistemas de Control","cert":"Sistemas de Control embebido","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Sistemas de Control","cert":"Simulación y diseño de sistemas de control","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Sistemas de Control","cert":"Control de redes y comunicación máquina a máquina","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Sistemas de Control","cert":"Control Avanzado","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Tecnologías de Baterías","cert":"Seguridad y manejo de baterías","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Tecnologías de Baterías","cert":"Evaluación, manufactura y. empaquetado de baterías","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Tecnologías de Baterías","cert":"Baterías primarias y secundarias","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Tecnologías de Baterías","cert":"Baterias en vehículos eléctricos","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Tecnologías de Baterías","cert":"Baterías basadas en zinc y níquel","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Tecnologías de Baterías","cert":"Baterías basadas en litio","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Vehículos autónomos","cert":"Sistemas de seguridad activa y pasiva","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Vehículos autónomos","cert":"Sistemas de control y navegación","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Vehículos autónomos","cert":"Potencia automotriz","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Vehículos autónomos","cert":"Integración de tecnologías de vehículos conectados","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Vehículos autónomos","cert":"Diseño de sistemas de Seguridad de vehículos autónomos","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Vehículos autónomos","cert":"Actuadores y sistemas de dirección","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Análisis de Datos y Digitalización","cert":"Transformación digital","opt":"Optativa 5","reut":3},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Análisis de Datos y Digitalización","cert":"Modelado y simulación en la gestión de Riesgos","opt":"Optativa 6","reut":2},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Análisis de Datos y Digitalización","cert":"Herramientas tecnológicas para análisis de datos II","opt":"Optativa 2","reut":2},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Análisis de Datos y Digitalización","cert":"Herramientas tecnológicas para análisis de datos I","opt":"Optativa 1","reut":2},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Análisis de Datos y Digitalización","cert":"Estrategia y toma de decisiones basada en datos","opt":"Optativa 3","reut":2},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Análisis de Datos y Digitalización","cert":"Diseño mecánico","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Calidad Automotriz","cert":"Liderazgo Estratégico","opt":"Optativa 6","reut":3},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Calidad Automotriz","cert":"Normatividad automotriz","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Calidad Automotriz","cert":"Gestión y control de documentos","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Calidad Automotriz","cert":"Core Tools II","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Calidad Automotriz","cert":"Core Tools I","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Calidad Automotriz","cert":"Auditoría y revisión de sistemas de calidad","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Equipos de Alto Rendimiento","cert":"Liderazgo Estratégico","opt":"Optativa 6","reut":3},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Equipos de Alto Rendimiento","cert":"Fundamentos de seguridad industrial","opt":"Optativa 3","reut":2},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Equipos de Alto Rendimiento","cert":"Administración del cambio","opt":"Optativa 5","reut":2},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Equipos de Alto Rendimiento","cert":"Gestión de documentos claves para producción","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Equipos de Alto Rendimiento","cert":"Cultura organizacional","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Equipos de Alto Rendimiento","cert":"Control Integral de piso de producción","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Gestión de Proyectos Green Belt","cert":"Proyectos de mejora continua","opt":"Optativa 6","reut":2},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Gestión de Proyectos Green Belt","cert":"Fundamentos de gestión de proyectos","opt":"Optativa 1","reut":2},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Gestión de Proyectos Green Belt","cert":"Compras y desarrollo de proveedores","opt":"Optativa 3","reut":2},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Gestión de Proyectos Green Belt","cert":"Métodos y herramientas avanzadas Green Belt","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Gestión de Proyectos Green Belt","cert":"Lean Six Sigma y metodología DMAIC","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Gestión de Proyectos Green Belt","cert":"Herramientas y software para la gestión de proyectos","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Gestión de Riesgos en Mercados Internacionales","cert":"Riesgos financieros y comerciales en logística","opt":"Optativa 2","reut":2},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Gestión de Riesgos en Mercados Internacionales","cert":"Importación y Exportación","opt":"Optativa 5","reut":2},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Gestión de Riesgos en Mercados Internacionales","cert":"Riesgos sociales, ambientales y éticos","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Gestión de Riesgos en Mercados Internacionales","cert":"Riesgos logísticos y modelos avanzados","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Gestión de Riesgos en Mercados Internacionales","cert":"Gestión avanzada de importación y exportación","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Gestión de Riesgos en Mercados Internacionales","cert":"Gestión aduanera y procedimientos de importación / Exportación","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Innovación y Logística Inteligente","cert":"Modelado y simulación en la gestión de Riesgos","opt":"Optativa 6","reut":2},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Innovación y Logística Inteligente","cert":"Herramientas tecnológicas para análisis de datos II","opt":"Optativa 2","reut":2},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Innovación y Logística Inteligente","cert":"Herramientas tecnológicas para análisis de datos I","opt":"Optativa 1","reut":2},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Innovación y Logística Inteligente","cert":"Estrategia y toma de decisiones basada en datos","opt":"Optativa 3","reut":2},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Innovación y Logística Inteligente","cert":"Sistemas de trazabilidad y RFID en logística","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Innovación y Logística Inteligente","cert":"Internet de las cosas (IOT) en logística","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Planeación de Materias y gestión de Almacenes","cert":"Fundamentos de seguridad industrial","opt":"Optativa 6","reut":2},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Planeación de Materias y gestión de Almacenes","cert":"Compras y desarrollo de proveedores","opt":"Optativa 3","reut":2},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Planeación de Materias y gestión de Almacenes","cert":"Planeación de inventarios","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Planeación de Materias y gestión de Almacenes","cert":"fundamentos de la planeación maestra y administración","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Planeación de Materias y gestión de Almacenes","cert":"gestión del almacén y seguridad","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Planeación de Materias y gestión de Almacenes","cert":"Diseño y optimización de almacenes","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Análisis de Datos","cert":"Algoritmos de aprendizaje automatizado","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Análisis de Datos","cert":"Visualización de datos masivos","opt":"Optativa 2","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Análisis de Datos","cert":"Sistemas y tecnologías de administración del conocimiento","opt":"Optativa 6","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Análisis de Datos","cert":"Gestión de tecnologías de información","opt":"Optativa 5","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Análisis de Datos","cert":"Análisis de datos con PowerBi","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Análisis de Datos","cert":"Analítica de big data","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Ciberseguridad","cert":"Diseño y arquitectura de software","opt":"Optativa 2","reut":3},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Ciberseguridad","cert":"Tópico selecto de tecnología de información","opt":"Optativa 6","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Ciberseguridad","cert":"Herramientas de tecnologías de información","opt":"Optativa 4","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Ciberseguridad","cert":"Tecnología de información de vanguardia","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Ciberseguridad","cert":"Inteligencia de amenazas cibernéticas","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Ciberseguridad","cert":"Getión de tecnologías de información","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Diseño y Programación de videojuegos","cert":"Programación de videojuegos","opt":"Optativa 1","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Diseño y Programación de videojuegos","cert":"Producción y composición digital","opt":"Optativa 6","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Diseño y Programación de videojuegos","cert":"Gestión y automatización de pruebas de software","opt":"Optativa 2","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Diseño y Programación de videojuegos","cert":"Diseño y animación del videojuegos","opt":"Optativa 5","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Diseño y Programación de videojuegos","cert":"Aplicaciones interactivas","opt":"Optativa 3","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Diseño y Programación de videojuegos","cert":"Diseño y arquitecturas de software","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Inteligencia Artificial","cert":"Algoritmos de aprendizaje automatico","opt":"Optativa 3","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Inteligencia Artificial","cert":"Visualización de datos masivos","opt":"Optativa 2","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Inteligencia Artificial","cert":"Inteligencia artificial","opt":"Optativa 1","reut":3},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Inteligencia Artificial","cert":"Sistemas y tecnologías de administración del conocimiento","opt":"Optativa 6","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Inteligencia Artificial","cert":"Tendencias tecnológicas","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Inteligencia Artificial","cert":"Fundamentos de computación cuántica","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Metodología DevOps","cert":"Diseño y arquitectura de software","opt":"Optativa 3","reut":3},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Metodología DevOps","cert":"Tópico selecto de tecnología de información","opt":"Optativa 6","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Metodología DevOps","cert":"Herramientas de tecnologías de información","opt":"Optativa 4","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Metodología DevOps","cert":"Gestión y automatización de pruebas de software","opt":"Optativa 2","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Metodología DevOps","cert":"Programación con código bajo","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Metodología DevOps","cert":"Especialización en DevOps","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Procesamiento de datos a gran escala BD","cert":"Gestión de tecnologías de información","opt":"Optativa 5","reut":2},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Procesamiento de datos a gran escala BD","cert":"Programación en Scala para la ciencia de datos","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Procesamiento de datos a gran escala BD","cert":"Procesamiento en tiempo real de datos distribuidos","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Procesamiento de datos a gran escala BD","cert":"Fundamentos de Big Data","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Procesamiento de datos a gran escala BD","cert":"Aplicaciones de procesamientos por lotes de datos distribuidos","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Procesamiento de datos a gran escala BD","cert":"Administración de Big Data en servidores distribuidos","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomia Internacional","cert":"Innovación y creatividad culinaria Internacional III","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomia Internacional","cert":"Innovación y creatividad culinaria Internacional II","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomia Internacional","cert":"Innovación y creatividad culinaria Internacional I","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomia Internacional","cert":"Cultura grastronómica Internacional III","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomia Internacional","cert":"Cultura grastronómica Internacional II","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomia Internacional","cert":"Cultura grastronómica Internacional I","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomía Latinoamericana","cert":"Innovación y creatividad culinaria Latinoamericana III","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomía Latinoamericana","cert":"Innovación y creatividad culinaria Latinoamericana II","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomía Latinoamericana","cert":"Innovación y creatividad culinaria Latinoamericana I","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomía Latinoamericana","cert":"Cultura grastronómica latinoamericana III","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomía Latinoamericana","cert":"Cultura grastronómica latinoamericana II","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomía Latinoamericana","cert":"Cultura grastronómica latinoamericana I","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomía Regional Mexicana","cert":"Ventas directas","opt":"Optativa 5","reut":2},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomía Regional Mexicana","cert":"Gastronomía Regional Mexicana III","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomía Regional Mexicana","cert":"Gastronomía Regional Mexicana II","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomía Regional Mexicana","cert":"Mercadotecnia estratégica administración de operaciones","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomía Regional Mexicana","cert":"Gastronomía Regional Mexicana I","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Animación","cert":"Transformación digital","opt":"Optativa 6","reut":3},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Animación","cert":"Inteligencia artificial","opt":"Optativa 1","reut":3},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Animación","cert":"Producción y composición digital","opt":"Optativa 2","reut":2},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Animación","cert":"Cultura visual","opt":"Optativa 5","reut":2},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Animación","cert":"Renderización e iluminación","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Animación","cert":"Diseño sonoro","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño de videojuegos","cert":"Transformación digital","opt":"Optativa 6","reut":3},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño de videojuegos","cert":"Diseño y arquitectura de software","opt":"Optativa 4","reut":3},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño de videojuegos","cert":"Programación de videojuegos","opt":"Optativa 1","reut":2},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño de videojuegos","cert":"Diseño y animación del videojuegos","opt":"Optativa 3","reut":2},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño de videojuegos","cert":"Aplicaciones interactivas","opt":"Optativa 2","reut":2},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño de videojuegos","cert":"Analítica digital","opt":"Optativa 5","reut":2},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño Gráfico","cert":"Emprendimiento","opt":"Optativa 6","reut":2},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño Gráfico","cert":"Cultura visual","opt":"Optativa 5","reut":2},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño Gráfico","cert":"Semiótica para el diseño gráfico","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño Gráfico","cert":"Producción editorial","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño Gráfico","cert":"Fotografía digital","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño Gráfico","cert":"Empaque y embalaje","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Derecho","ruta":"Criminología","cert":"Administración de proyectos","opt":"Optativa 6","reut":3},{"p":"Licenciatura en Derecho","ruta":"Criminología","cert":"Lectura y redacción jurídica","opt":"Optativa 5","reut":3},{"p":"Licenciatura en Derecho","ruta":"Criminología","cert":"Proyectos de mejora continua","opt":"Optativa 1","reut":2},{"p":"Licenciatura en Derecho","ruta":"Criminología","cert":"Victimología","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Derecho","ruta":"Criminología","cert":"Perfiles criminales","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Derecho","ruta":"Criminología","cert":"Medicina Forense","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Derecho","ruta":"Derechos Humanos","cert":"Administración de proyectos","opt":"Optativa 6","reut":3},{"p":"Licenciatura en Derecho","ruta":"Derechos Humanos","cert":"Lectura y redacción jurídica","opt":"Optativa 5","reut":3},{"p":"Licenciatura en Derecho","ruta":"Derechos Humanos","cert":"Responsabilidad social empresarial y derechos humanos","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Derecho","ruta":"Derechos Humanos","cert":"igualdad de género y no discriminación","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Derecho","ruta":"Derechos Humanos","cert":"Derechos fundamentales y sus procesos","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Derecho","ruta":"Derechos Humanos","cert":"Derechos civiles y políticos","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Derecho","ruta":"Legal Tech","cert":"Fundamentos de la programación","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Derecho","ruta":"Legal Tech","cert":"Emprendimiento","opt":"Optativa 6","reut":2},{"p":"Licenciatura en Derecho","ruta":"Legal Tech","cert":"Legal tech y Reg Tech","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Derecho","ruta":"Legal Tech","cert":"Innovación y transformación digital de la abogacía","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Derecho","ruta":"Legal Tech","cert":"Gestión de la abogacía","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Derecho","ruta":"Legal Tech","cert":"Derecho cibernético e informático","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Derecho","ruta":"Sistema Penal Acusatorio","cert":"Administración de proyectos","opt":"Optativa 6","reut":3},{"p":"Licenciatura en Derecho","ruta":"Sistema Penal Acusatorio","cert":"Lectura y redacción jurídica","opt":"Optativa 5","reut":3},{"p":"Licenciatura en Derecho","ruta":"Sistema Penal Acusatorio","cert":"Teoría del delito en el sistema penal acusatorio","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Derecho","ruta":"Sistema Penal Acusatorio","cert":"MASC en el sistema acusatorio","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Derecho","ruta":"Sistema Penal Acusatorio","cert":"Delitos especiales","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Derecho","ruta":"Sistema Penal Acusatorio","cert":"Ciencias forenses en el sistema penal acusatorio","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Creación y Desarrollo de Empresas","ruta":"Estrategia para nuevas empresas","cert":"Administración de inventarios","opt":"Optativa 6","reut":3},{"p":"Licenciatura en Creación y Desarrollo de Empresas","ruta":"Estrategia para nuevas empresas","cert":"Propiedad intelectual y patentes","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Creación y Desarrollo de Empresas","ruta":"Estrategia para nuevas empresas","cert":"Franquicias para emprendedores","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Creación y Desarrollo de Empresas","ruta":"Estrategia para nuevas empresas","cert":"Emprendimiento digital","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Creación y Desarrollo de Empresas","ruta":"Estrategia para nuevas empresas","cert":"Contabilidad financiera y costos","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Creación y Desarrollo de Empresas","ruta":"Estrategia para nuevas empresas","cert":"Administración de PYMES y empresas familiares","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Creación y Desarrollo de Empresas","ruta":"Estrategias de mercadotecnia","cert":"Administración y promoción de ventas","opt":"Optativa 4","reut":3},{"p":"Licenciatura en Creación y Desarrollo de Empresas","ruta":"Estrategias de mercadotecnia","cert":"Mercadotecniadigital","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Creación y Desarrollo de Empresas","ruta":"Estrategias de mercadotecnia","cert":"Mercadotecnia estratégica","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Creación y Desarrollo de Empresas","ruta":"Estrategias de mercadotecnia","cert":"Mercados y consumidores","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Creación y Desarrollo de Empresas","ruta":"Estrategias de mercadotecnia","cert":"Estrategia de redes sociales","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Creación y Desarrollo de Empresas","ruta":"Estrategias de mercadotecnia","cert":"Administración de precios","opt":"Optativa 7","reut":1},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","ruta":"Contabilidad y Derecho","cert":"Administración de inventarios","opt":"Optativa 4","reut":3},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","ruta":"Contabilidad y Derecho","cert":"Modelación financiera","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","ruta":"Contabilidad y Derecho","cert":"Gestión de activos","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","ruta":"Contabilidad y Derecho","cert":"Derecho Laboral","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","ruta":"Contabilidad y Derecho","cert":"Contabilidad de sociedades mercantiles","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","ruta":"Contabilidad y Derecho","cert":"Contabilidad administrativa","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","ruta":"Inversiones","cert":"Inversiones alternativas y ETFS","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","ruta":"Inversiones","cert":"Inversión y viabildiad de proyectos","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","ruta":"Inversiones","cert":"Criptofinanzas","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","ruta":"Inversiones","cert":"Analítica financiera","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","ruta":"Inversiones","cert":"Admnistración de fondos de inversión","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","ruta":"Inversiones","cert":"Administración de portafolios de inversión","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Comercio y Negocios Internacionales","ruta":"Logistica y cadena de suministro","cert":"Administración de inventarios","opt":"Optativa 6","reut":3},{"p":"Licenciatura en Comercio y Negocios Internacionales","ruta":"Logistica y cadena de suministro","cert":"Riesgos financieros y comerciales en logística","opt":"Optativa 3","reut":2},{"p":"Licenciatura en Comercio y Negocios Internacionales","ruta":"Logistica y cadena de suministro","cert":"Planeación de la cadena de suministro","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Comercio y Negocios Internacionales","ruta":"Logistica y cadena de suministro","cert":"Merceología","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Comercio y Negocios Internacionales","ruta":"Logistica y cadena de suministro","cert":"Gestión de centros de distribución, bodegas y almacenes","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Comercio y Negocios Internacionales","ruta":"Logistica y cadena de suministro","cert":"Empaque, embalaje y etiquetado","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Comercio y Negocios Internacionales","ruta":"Negocios Internacionales","cert":"Importación y Exportación","opt":"Optativa 3","reut":2},{"p":"Licenciatura en Comercio y Negocios Internacionales","ruta":"Negocios Internacionales","cert":"Negocios en Asia y Europa","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Comercio y Negocios Internacionales","ruta":"Negocios Internacionales","cert":"Negocios en América","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Comercio y Negocios Internacionales","ruta":"Negocios Internacionales","cert":"Finanzas internacionales","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Comercio y Negocios Internacionales","ruta":"Negocios Internacionales","cert":"Contratos internacionales","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Comercio y Negocios Internacionales","ruta":"Negocios Internacionales","cert":"Análisis de mercados internacionales","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión de ventas estratégicas","cert":"Servicios y experiencia al cliente","opt":"Optativa 1","reut":3},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión de ventas estratégicas","cert":"Administración y promoción de ventas","opt":"Optativa 6","reut":3},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión de ventas estratégicas","cert":"Negocioción y comunicación comercial","opt":"Optativa 2","reut":2},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión de ventas estratégicas","cert":"Habilidades para la venta","opt":"Optativa 3","reut":2},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión de ventas estratégicas","cert":"Administración de equipos de venta","opt":"Optativa 4","reut":2},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión de ventas estratégicas","cert":"Administración de cuentas claves","opt":"Optativa 5","reut":2},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión del capital humano","cert":"Administración del cambio","opt":"Optativa 6","reut":2},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión del capital humano","cert":"Relaciones laborales, seguridad e higiene","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión del capital humano","cert":"Desarrollo roganizacional","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión del capital humano","cert":"Atracción del capital humano","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión del capital humano","cert":"Aprendizaje organizacional","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión del capital humano","cert":"Administración de las compensaciones","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Administración de Empresas","ruta":"Liderazgo e Innovación","cert":"Liderazgo Estratégico","opt":"Optativa 4","reut":3},{"p":"Licenciatura en Administración de Empresas","ruta":"Liderazgo e Innovación","cert":"Modelos de negocios","opt":"Optativa 3","reut":1},{"p":"Licenciatura en Administración de Empresas","ruta":"Liderazgo e Innovación","cert":"Innovación efectiva","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Administración de Empresas","ruta":"Liderazgo e Innovación","cert":"Habilidades directivas","opt":"Optativa 5","reut":1},{"p":"Licenciatura en Administración de Empresas","ruta":"Liderazgo e Innovación","cert":"Ética Empresarial","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Administración de Empresas","ruta":"Liderazgo e Innovación","cert":"Creatividad y disrupciíon","opt":"Optativa 2","reut":1},{"p":"Licenciatura en Administración de Empresas","ruta":"Turismo","cert":"Servicios y experiencia al cliente","opt":"Optativa 2","reut":3},{"p":"Licenciatura en Administración de Empresas","ruta":"Turismo","cert":"Ventas directas","opt":"Optativa 5","reut":2},{"p":"Licenciatura en Administración de Empresas","ruta":"Turismo","cert":"Turimos cultural en México","opt":"Optativa 6","reut":1},{"p":"Licenciatura en Administración de Empresas","ruta":"Turismo","cert":"Operaciones hoteleras","opt":"Optativa 4","reut":1},{"p":"Licenciatura en Administración de Empresas","ruta":"Turismo","cert":"Operaciones básicas de la industria turística","opt":"Optativa 1","reut":1},{"p":"Licenciatura en Administración de Empresas","ruta":"Turismo","cert":"Gestión de alimentos y Bebidas","opt":"Optativa 3","reut":1}],"rutasFusion":[{"cert":"Servicios y experiencia al cliente","detail":[{"p":"Licenciatura en Mercadotecnia","ruta":"Gestión de ventas estratégicas","opt":"Optativa 5"},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión de ventas estratégicas","opt":"Optativa 1"},{"p":"Licenciatura en Administración de Empresas","ruta":"Turismo","opt":"Optativa 2"}]},{"cert":"Administración y promoción de ventas","detail":[{"p":"Licenciatura en Mercadotecnia","ruta":"Gestión de ventas estratégicas","opt":"Optativa 6"},{"p":"Licenciatura en Creación y Desarrollo de Empresas","ruta":"Estrategias de mercadotecnia","opt":"Optativa 4"},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión de ventas estratégicas","opt":"Optativa 6"}]},{"cert":"Inteligencia artificial","detail":[{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Inteligencia Artificial","opt":"Optativa 2"},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Inteligencia Artificial","opt":"Optativa 1"},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Animación","opt":"Optativa 1"}]},{"cert":"Transformación digital","detail":[{"p":"Licenciatura en Ingeniería Industrial","ruta":"Análisis de Datos y Digitalización","opt":"Optativa 5"},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Animación","opt":"Optativa 6"},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño de videojuegos","opt":"Optativa 6"}]},{"cert":"Liderazgo Estratégico","detail":[{"p":"Licenciatura en Ingeniería Industrial","ruta":"Calidad Automotriz","opt":"Optativa 6"},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Equipos de Alto Rendimiento","opt":"Optativa 6"},{"p":"Licenciatura en Administración de Empresas","ruta":"Liderazgo e Innovación","opt":"Optativa 4"}]},{"cert":"Diseño y arquitectura de software","detail":[{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Ciberseguridad","opt":"Optativa 2"},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Metodología DevOps","opt":"Optativa 3"},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño de videojuegos","opt":"Optativa 4"}]},{"cert":"Administración de inventarios","detail":[{"p":"Licenciatura en Creación y Desarrollo de Empresas","ruta":"Estrategia para nuevas empresas","opt":"Optativa 6"},{"p":"Licenciatura en Contabilidad y Estrategia Financiera","ruta":"Contabilidad y Derecho","opt":"Optativa 4"},{"p":"Licenciatura en Comercio y Negocios Internacionales","ruta":"Logistica y cadena de suministro","opt":"Optativa 6"}]},{"cert":"Analítica digital","detail":[{"p":"Licenciatura en Mercadotecnia","ruta":"Estrategías de Mercadotecnia en Buscadores y Comercio Electrónico","opt":"Optativa 6"},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño de videojuegos","opt":"Optativa 5"}]},{"cert":"Negocioción y comunicación comercial","detail":[{"p":"Licenciatura en Mercadotecnia","ruta":"Gestión de ventas estratégicas","opt":"Optativa 1"},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión de ventas estratégicas","opt":"Optativa 2"}]},{"cert":"Habilidades para la venta","detail":[{"p":"Licenciatura en Mercadotecnia","ruta":"Gestión de ventas estratégicas","opt":"Optativa 3"},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión de ventas estratégicas","opt":"Optativa 3"}]},{"cert":"Administración de equipos de venta","detail":[{"p":"Licenciatura en Mercadotecnia","ruta":"Gestión de ventas estratégicas","opt":"Optativa 4"},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión de ventas estratégicas","opt":"Optativa 4"}]},{"cert":"Administración de cuentas claves","detail":[{"p":"Licenciatura en Mercadotecnia","ruta":"Gestión de ventas estratégicas","opt":"Optativa 2"},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión de ventas estratégicas","opt":"Optativa 5"}]},{"cert":"Algoritmos de aprendizaje automatico","detail":[{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Inteligencia Artificial","opt":"Optativa 3"},{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Inteligencia Artificial","opt":"Optativa 3"}]},{"cert":"Fundamentos de gestión de proyectos","detail":[{"p":"Licenciatura en Ingeniería Mecatrónica","ruta":"Mecatrónica Avanzada","opt":"Optativa 3"},{"p":"Licenciatura en Ingeniería Industrial","ruta":"Gestión de Proyectos Green Belt","opt":"Optativa 1"}]},{"cert":"Modelado y simulación en la gestión de Riesgos","detail":[{"p":"Licenciatura en Ingeniería Industrial","ruta":"Análisis de Datos y Digitalización","opt":"Optativa 6"},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Innovación y Logística Inteligente","opt":"Optativa 6"}]},{"cert":"Herramientas tecnológicas para análisis de datos II","detail":[{"p":"Licenciatura en Ingeniería Industrial","ruta":"Análisis de Datos y Digitalización","opt":"Optativa 2"},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Innovación y Logística Inteligente","opt":"Optativa 2"}]},{"cert":"Herramientas tecnológicas para análisis de datos I","detail":[{"p":"Licenciatura en Ingeniería Industrial","ruta":"Análisis de Datos y Digitalización","opt":"Optativa 1"},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Innovación y Logística Inteligente","opt":"Optativa 1"}]},{"cert":"Estrategia y toma de decisiones basada en datos","detail":[{"p":"Licenciatura en Ingeniería Industrial","ruta":"Análisis de Datos y Digitalización","opt":"Optativa 3"},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Innovación y Logística Inteligente","opt":"Optativa 3"}]},{"cert":"Fundamentos de seguridad industrial","detail":[{"p":"Licenciatura en Ingeniería Industrial","ruta":"Equipos de Alto Rendimiento","opt":"Optativa 3"},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Planeación de Materias y gestión de Almacenes","opt":"Optativa 6"}]},{"cert":"Administración del cambio","detail":[{"p":"Licenciatura en Ingeniería Industrial","ruta":"Equipos de Alto Rendimiento","opt":"Optativa 5"},{"p":"Licenciatura en Administración de Empresas","ruta":"Gestión del capital humano","opt":"Optativa 6"}]},{"cert":"Proyectos de mejora continua","detail":[{"p":"Licenciatura en Ingeniería Industrial","ruta":"Gestión de Proyectos Green Belt","opt":"Optativa 6"},{"p":"Licenciatura en Derecho","ruta":"Criminología","opt":"Optativa 1"}]},{"cert":"Compras y desarrollo de proveedores","detail":[{"p":"Licenciatura en Ingeniería Industrial","ruta":"Gestión de Proyectos Green Belt","opt":"Optativa 3"},{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Planeación de Materias y gestión de Almacenes","opt":"Optativa 3"}]},{"cert":"Riesgos financieros y comerciales en logística","detail":[{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Gestión de Riesgos en Mercados Internacionales","opt":"Optativa 2"},{"p":"Licenciatura en Comercio y Negocios Internacionales","ruta":"Logistica y cadena de suministro","opt":"Optativa 3"}]},{"cert":"Importación y Exportación","detail":[{"p":"Licenciatura en Ingeniería en Logística y Cadena de Suministro","ruta":"Gestión de Riesgos en Mercados Internacionales","opt":"Optativa 5"},{"p":"Licenciatura en Comercio y Negocios Internacionales","ruta":"Negocios Internacionales","opt":"Optativa 3"}]},{"cert":"Programación de videojuegos","detail":[{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Diseño y Programación de videojuegos","opt":"Optativa 1"},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño de videojuegos","opt":"Optativa 1"}]},{"cert":"Producción y composición digital","detail":[{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Diseño y Programación de videojuegos","opt":"Optativa 6"},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Animación","opt":"Optativa 2"}]},{"cert":"Diseño y animación del videojuegos","detail":[{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Diseño y Programación de videojuegos","opt":"Optativa 5"},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño de videojuegos","opt":"Optativa 3"}]},{"cert":"Aplicaciones interactivas","detail":[{"p":"Licenciatura en Ingeniería en Desarrollo de Software","ruta":"Diseño y Programación de videojuegos","opt":"Optativa 3"},{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño de videojuegos","opt":"Optativa 2"}]},{"cert":"Ventas directas","detail":[{"p":"Licenciatura en Gastronomía Internacional","ruta":"Gastronomía Regional Mexicana","opt":"Optativa 5"},{"p":"Licenciatura en Administración de Empresas","ruta":"Turismo","opt":"Optativa 5"}]},{"cert":"Emprendimiento","detail":[{"p":"Licenciatura en Diseño Gráfico y Animación","ruta":"Diseño Gráfico","opt":"Optativa 6"},{"p":"Licenciatura en Derecho","ruta":"Legal Tech","opt":"Optativa 6"}]}]};
+</script>
+<script>
+// ============================================================
+// STATE & DATA INDEXING
+// ============================================================
+const D = DATA;
+const CAMPUSES = D.campuses;
+const PROGRAMS = D.programs;
+
+const ST = {
+  flexMax: 4,
+  presMin: 11,
+  clasCampus: 'TODOS',
+  clasPrograma: PROGRAMS[0],
+  tronCampus: CAMPUSES[0],
+  tronSem: 1,
+  tronApply: true,
+  rutCampus: CAMPUSES[0],
+  rutSem: 6,
+  rutFusion: true,
+  rutSimOn: false,
+  rutSimN: 4,
+  mcPrograma: PROGRAMS[0],
+  mcSelected: new Set(),
+  fusiones: [] // {id, programa, campuses:[...]}
+};
+
+const BD_INDEX = {};
+const CAMPUS_PROGRAMS = {};
+const PROGRAM_CAMPUSES = {};
+D.baseDatos.forEach(r=>{
+  BD_INDEX[r.c+'|'+r.p] = r.s;
+  (CAMPUS_PROGRAMS[r.c] = CAMPUS_PROGRAMS[r.c]||[]).push(r.p);
+  (PROGRAM_CAMPUSES[r.p] = PROGRAM_CAMPUSES[r.p]||[]).push(r.c);
+});
+Object.values(CAMPUS_PROGRAMS).forEach(a=>a.sort());
+Object.values(PROGRAM_CAMPUSES).forEach(a=>a.sort());
+
+const PORT_INDEX = {};
+D.portafolio.forEach(r=>{ PORT_INDEX[r.c+'|'+r.p] = r; });
+const RUTASASIS_INDEX = {};
+D.rutasAsIs.forEach(r=>{ if(PROGRAMS.includes(r.p)) RUTASASIS_INDEX[r.p] = r; });
+
+function getSemArr(campus,programa){ return BD_INDEX[campus+'|'+programa] || null; }
+function getRutasCount(campus,programa){
+  const p = PORT_INDEX[campus+'|'+programa];
+  if(p && p.r2526) return p.r2526;
+  const a = RUTASASIS_INDEX[programa];
+  return a && a.r2526 ? a.r2526 : 1;
+}
+function progShort(p){ return p.replace('Licenciatura en ',''); }
+
+// ============================================================
+// CLASSIFICATION
+// ============================================================
+function classify2(n){
+  const v = Math.round(n);
+  if(v < ST.flexMax) return 'flex';
+  if(v >= ST.presMin) return 'pres';
+  return 'multi';
+}
+function clsLabel(c){return {flex:'Flex',multi:'Multicampus',pres:'Presencial',none:'Sin datos'}[c]||'—';}
+function clsClass(c){return {flex:'cell-flex',multi:'cell-multi',pres:'cell-pres',none:'cell-none'}[c]||'cell-none';}
+function clsBadge(c){return {flex:'badge-flex',multi:'badge-multi',pres:'badge-pres',none:'badge-none'}[c]||'badge-none';}
+function clsColor(c){return {flex:'var(--flex)',multi:'var(--multi)',pres:'var(--pres)',none:'#ccc'}[c]||'#ccc';}
+function fmt(n){ return Math.round(n).toLocaleString('es-MX'); }
+function fmt1(n){ return (Math.round(n*10)/10).toLocaleString('es-MX',{minimumFractionDigits:1,maximumFractionDigits:1}); }
+
+function cellHtml(n){
+  const c = classify2(n);
+  return `<div class="cell ${clsClass(c)}">${fmt(n)}</div>`;
+}
+function badgeHtml(c){
+  return `<span class="badge ${clsBadge(c)}"><span class="bdot" style="background:${clsColor(c)}"></span>${clsLabel(c)}</span>`;
+}
+
+// network-wide counts per semester (baseline, raw 219 rows)
+function computeNetworkCounts(){
+  const counts = {};
+  for(let s=1;s<=7;s++) counts[s] = {flex:0,multi:0,pres:0};
+  D.baseDatos.forEach(r=>{
+    for(let s=1;s<=7;s++){
+      const c = classify2(r.s[s-1]);
+      counts[s][c]++;
+    }
+  });
+  return counts;
+}
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+const RENDERERS = {};
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+tab));
+  if(RENDERERS[tab]) RENDERERS[tab]();
+}
+document.getElementById('navTabs').addEventListener('click', e=>{
+  const btn = e.target.closest('.tab-btn');
+  if(btn) switchTab(btn.dataset.tab);
+});
+
+// ============================================================
+// GLOBAL CONTROLS
+// ============================================================
+function updateGChips(){
+  const counts = computeNetworkCounts()[1];
+  document.getElementById('gChips').innerHTML = `
+    <span class="gchip"><span class="gdot" style="background:var(--flex)"></span>Sem1 Flex: ${counts.flex}</span>
+    <span class="gchip"><span class="gdot" style="background:var(--multi)"></span>Sem1 Multi: ${counts.multi}</span>
+    <span class="gchip"><span class="gdot" style="background:var(--pres)"></span>Sem1 Pres: ${counts.pres}</span>
+  `;
+}
+function bindGlobal(){
+  const fm = document.getElementById('gFlexMax'), pm = document.getElementById('gPresMin');
+  fm.addEventListener('input', ()=>{
+    ST.flexMax = Math.min(parseInt(fm.value), ST.presMin-1);
+    fm.value = ST.flexMax;
+    document.getElementById('gFlexMaxVal').textContent = ST.flexMax;
+    onGlobalChange();
+  });
+  pm.addEventListener('input', ()=>{
+    ST.presMin = Math.max(parseInt(pm.value), ST.flexMax+1);
+    pm.value = ST.presMin;
+    document.getElementById('gPresMinVal').textContent = ST.presMin;
+    onGlobalChange();
+  });
+}
+function onGlobalChange(){
+  updateGChips();
+  const active = document.querySelector('.panel.active');
+  if(active){
+    const tab = active.id.replace('panel-','');
+    if(RENDERERS[tab]) RENDERERS[tab]();
+  }
+}
+
+// ============================================================
+// SELECT BUILDERS
+// ============================================================
+function fillSelect(el, items, withTodos, currentVal){
+  let html = '';
+  if(withTodos) html += `<option value="TODOS">Todos</option>`;
+  items.forEach(it=>{ html += `<option value="${it.replace(/"/g,'&quot;')}">${progShort(it)}</option>`; });
+  el.innerHTML = html;
+  if(currentVal) el.value = currentVal;
+}
+
+// ============================================================
+// STACKED BAR HELPERS
+// ============================================================
+function stackedBar(counts){
+  const tot = counts.flex+counts.multi+counts.pres;
+  if(tot===0) return `<div class="sbar"></div>`;
+  let html = `<div class="sbar">`;
+  if(counts.flex>0) html += `<div class="sbar-seg" style="width:${counts.flex/tot*100}%;background:var(--flex)">${counts.flex}</div>`;
+  if(counts.multi>0) html += `<div class="sbar-seg" style="width:${counts.multi/tot*100}%;background:var(--multi)">${counts.multi}</div>`;
+  if(counts.pres>0) html += `<div class="sbar-seg" style="width:${counts.pres/tot*100}%;background:var(--pres)">${counts.pres}</div>`;
+  html += `</div>`;
+  return html;
+}
+function chartFromCounts(countsBySem, semList){
+  let html = '';
+  semList.forEach(s=>{
+    html += `<div class="chart-row"><div class="chart-lbl">Sem ${s}</div>${stackedBar(countsBySem[s])}</div>`;
+  });
+  return html;
+}
+
+// ============================================================
+// TAB 1: CLASIFICACIÓN
+// ============================================================
+function initClasificacion(){
+  fillSelect(document.getElementById('clasCampus'), CAMPUSES, true, ST.clasCampus);
+  fillSelect(document.getElementById('clasPrograma'), PROGRAMS, true, ST.clasPrograma);
+  document.getElementById('clasCampus').addEventListener('change', e=>{ ST.clasCampus=e.target.value; renderClasificacion(); });
+  document.getElementById('clasPrograma').addEventListener('change', e=>{ ST.clasPrograma=e.target.value; renderClasificacion(); });
+}
+function renderClasificacion(){
+  const netCounts = computeNetworkCounts();
+  // KPIs from sem1 + totals across all 7 sems (sum)
+  let totFlex=0, totMulti=0, totPres=0, totRows=D.baseDatos.length*7;
+  for(let s=1;s<=7;s++){ totFlex+=netCounts[s].flex; totMulti+=netCounts[s].multi; totPres+=netCounts[s].pres; }
+  document.getElementById('clasKpis').innerHTML = `
+    <div class="kpi k-accent"><div class="kpi-val">${D.baseDatos.length}</div><div class="kpi-lbl">Combinaciones campus–programa</div></div>
+    <div class="kpi k-flex"><div class="kpi-val">${(totFlex/totRows*100).toFixed(0)}%</div><div class="kpi-lbl">Sesiones Flex (todas las sem.)</div></div>
+    <div class="kpi k-multi"><div class="kpi-val">${(totMulti/totRows*100).toFixed(0)}%</div><div class="kpi-lbl">Sesiones Multicampus</div></div>
+    <div class="kpi k-pres"><div class="kpi-val">${(totPres/totRows*100).toFixed(0)}%</div><div class="kpi-lbl">Sesiones Presencial</div></div>
+  `;
+
+  document.getElementById('clasOverview').innerHTML = chartFromCounts(netCounts,[1,2,3,4,5,6,7]);
+
+  // detail table
+  let rows = D.baseDatos.filter(r=>
+    (ST.clasCampus==='TODOS' || r.c===ST.clasCampus) &&
+    (ST.clasPrograma==='TODOS' || r.p===ST.clasPrograma)
+  );
+  rows = rows.slice().sort((a,b)=> a.c===b.c ? a.p.localeCompare(b.p) : a.c.localeCompare(b.c));
+
+  let html = `<table class="dt"><thead><tr><th>Campus</th><th>Programa</th>`;
+  for(let s=1;s<=7;s++) html += `<th>Sem ${s}</th>`;
+  html += `</tr></thead><tbody>`;
+  if(rows.length===0){
+    html += `<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px">Sin combinaciones para este filtro</td></tr>`;
+  }
+  rows.forEach(r=>{
+    html += `<tr><td>${r.c}</td><td>${progShort(r.p)}</td>`;
+    r.s.forEach(v=>{ html += `<td>${cellHtml(v)}</td>`; });
+    html += `</tr>`;
+  });
+  html += `</tbody></table>`;
+  document.getElementById('clasTable').innerHTML = html;
+}
+RENDERERS.clasificacion = renderClasificacion;
+
+// ============================================================
+// TAB 2: TRONCALIDAD
+// ============================================================
+function initTroncalidad(){
+  fillSelect(document.getElementById('tronCampus'), CAMPUSES, false, ST.tronCampus);
+  document.getElementById('tronCampus').addEventListener('change', e=>{ ST.tronCampus=e.target.value; renderTroncalidad(); });
+  document.getElementById('tronSem').addEventListener('change', e=>{ ST.tronSem=parseInt(e.target.value); renderTroncalidad(); });
+  document.getElementById('tronApply').addEventListener('change', e=>{ ST.tronApply=e.target.checked; renderTroncalidad(); });
+}
+function troncalidadGroupsForCampusSem(campus, sem){
+  const offered = CAMPUS_PROGRAMS[campus] || [];
+  const groups = (D.troncalidad[sem]||[]);
+  const out = [];
+  groups.forEach(g=>{
+    const present = g.programas.filter(p=>offered.includes(p));
+    if(present.length>1){
+      out.push({cert:g.cert, tipo:g.tipo, programas:present});
+    }
+  });
+  return out;
+}
+function renderTroncalidad(){
+  const campus = ST.tronCampus, sem = ST.tronSem;
+  const groups = ST.tronApply ? troncalidadGroupsForCampusSem(campus, sem) : [];
+
+  let totalBefore=0, totalAfter=0, upgrades=0, sessions=0;
+  const cards = groups.map(g=>{
+    let sum=0;
+    const parts = g.programas.map(p=>{
+      const arr = getSemArr(campus,p);
+      const n = arr ? arr[sem-1] : 0;
+      sum += n;
+      return {p,n,cls:classify2(n)};
+    });
+    const fusedCls = classify2(sum);
+    sessions++;
+    const anyBelow = parts.some(x=>x.cls!=='pres');
+    if(fusedCls==='pres' && anyBelow) upgrades++;
+    parts.forEach(x=>{ totalBefore += (x.cls!=='flex'?1:0); });
+    return {g,parts,sum,fusedCls};
+  });
+
+  document.getElementById('tronKpis').innerHTML = `
+    <div class="kpi k-accent"><div class="kpi-val">${groups.length}</div><div class="kpi-lbl">Certificados con troncalidad en ${progShort(campus)}</div></div>
+    <div class="kpi k-pres"><div class="kpi-val">${upgrades}</div><div class="kpi-lbl">Sesiones que alcanzan Presencial al fusionar</div></div>
+    <div class="kpi k-multi"><div class="kpi-val">${(CAMPUS_PROGRAMS[campus]||[]).length}</div><div class="kpi-lbl">Programas activos en el campus</div></div>
+  `;
+
+  if(groups.length===0){
+    const msg = !ST.tronApply
+      ? `La fusión por troncalidad está desactivada. Activa el interruptor para ver las sesiones de certificado que podrían compartirse entre programas de <b>${progShort(campus)}</b>.`
+      : `No hay certificados de troncalidad compartidos entre los programas de <b>${progShort(campus)}</b> en el semestre ${sem}.<br>Prueba otro semestre o campus.`;
+    document.getElementById('tronGroups').innerHTML = `<div class="card"><div class="empty-box"><div class="ee">📚</div>${msg}</div></div>`;
+    return;
+  }
+
+  let html = '';
+  cards.forEach(({g,parts,sum,fusedCls})=>{
+    html += `<div class="fgroup">
+      <div class="fgroup-head">
+        <div><div class="fgroup-cert">${g.cert}</div><div class="fgroup-type">${g.tipo} · ${parts.length} programas</div></div>
+        <span class="tag">Sem ${sem}</span>
+      </div>
+      <div class="fcols">
+        <div class="fcol">
+          <div class="fcol-title">Grupos individuales</div>
+          ${parts.map(x=>`<div class="frow"><span>${progShort(x.p)}</span><b>${fmt(x.n)}</b> ${badgeHtml(x.cls)}</div>`).join('')}
+        </div>
+        <div class="farrow">→</div>
+        <div class="fcol">
+          <div class="fcol-title">Grupo fusionado por troncalidad</div>
+          <div class="fresult"><span>${g.cert}</span><b>${fmt(sum)}</b></div>
+          <div style="margin-top:8px">${badgeHtml(fusedCls)}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('tronGroups').innerHTML = html;
+}
+RENDERERS.troncalidad = renderTroncalidad;
+
+// ============================================================
+// TAB 3: RUTAS DE ENFOQUE
+// ============================================================
+function routeNum(optStr){ const m=(optStr||'').match(/\d+/); return m?parseInt(m[0]):1; }
+
+function initRutas(){
+  fillSelect(document.getElementById('rutCampus'), CAMPUSES, false, ST.rutCampus);
+  document.getElementById('rutCampus').addEventListener('change', e=>{ ST.rutCampus=e.target.value; renderRutas(); });
+  document.getElementById('rutSem').addEventListener('change', e=>{ ST.rutSem=parseInt(e.target.value); renderRutas(); });
+  document.getElementById('rutFusion').addEventListener('change', e=>{ ST.rutFusion=e.target.checked; renderRutas(); });
+  document.getElementById('rutSimOn').addEventListener('change', e=>{
+    ST.rutSimOn=e.target.checked;
+    document.getElementById('rutSimWrap').style.display = ST.rutSimOn?'flex':'none';
+    renderRutas();
+  });
+  document.getElementById('rutSimN').addEventListener('input', e=>{
+    ST.rutSimN=parseInt(e.target.value);
+    document.getElementById('rutSimNVal').textContent = ST.rutSimN;
+    renderRutas();
+  });
+}
+
+function rutasProgramData(campus, sem){
+  const offered = (CAMPUS_PROGRAMS[campus]||[]).filter(p => RUTASASIS_INDEX[p] || PORT_INDEX[campus+'|'+p]);
+  const out = [];
+  offered.forEach(p=>{
+    const arr = getSemArr(campus,p);
+    if(!arr) return;
+    const real = getRutasCount(campus,p);
+    const real12 = D.rutasEnfoque.some(x=>x.p===p);
+    if(!real12) return; // no curriculum map data for routes
+    const routes = ST.rutSimOn ? ST.rutSimN : real;
+    const cohort = arr[sem-1];
+    const perRoute = routes>0 ? cohort/routes : cohort;
+    out.push({p, cohort, routes, realRoutes: real, perRoute, cls: classify2(perRoute)});
+  });
+  return out;
+}
+
+function rutasFusionForCampus(campus, sem, progData){
+  const progSet = {};
+  progData.forEach(d=>{ progSet[d.p] = d; });
+  const out = [];
+  D.rutasFusion.forEach(f=>{
+    const entries = f.detail.filter(e=>{
+      if(!progSet[e.p]) return false;
+      const rn = routeNum(e.opt);
+      return rn <= progSet[e.p].routes;
+    });
+    // dedupe by program (a cert could map to same program twice via different routes, keep first)
+    const seen = new Set(); const uniq=[];
+    entries.forEach(e=>{ if(!seen.has(e.p)){ seen.add(e.p); uniq.push(e); } });
+    if(uniq.length>1){
+      out.push({cert:f.cert, entries:uniq});
+    }
+  });
+  return out;
+}
+
+function renderRutas(){
+  const campus = ST.rutCampus, sem = ST.rutSem;
+  const progData = rutasProgramData(campus, sem);
+  const fusions = ST.rutFusion ? rutasFusionForCampus(campus, sem, progData) : [];
+
+  let upgrades=0;
+  const fusionCards = fusions.map(f=>{
+    let sum=0;
+    const parts = f.entries.map(e=>{
+      const pd = progData.find(d=>d.p===e.p);
+      sum += pd.perRoute;
+      return {p:e.p, ruta:e.ruta, opt:e.opt, n:pd.perRoute, cls:pd.cls};
+    });
+    const fusedCls = classify2(sum);
+    if(fusedCls!=='flex' && parts.some(x=>x.cls==='flex')) upgrades++;
+    return {cert:f.cert, parts, sum, fusedCls};
+  });
+
+  document.getElementById('rutKpis').innerHTML = `
+    <div class="kpi k-accent"><div class="kpi-val">${progData.length}</div><div class="kpi-lbl">Programas con rutas en ${progShort(campus)}</div></div>
+    <div class="kpi k-multi"><div class="kpi-val">${fusionCards.length}</div><div class="kpi-lbl">Certificados con oportunidad de fusión</div></div>
+    <div class="kpi k-pres"><div class="kpi-val">${upgrades}</div><div class="kpi-lbl">Grupos que dejan de ser Flex al fusionar</div></div>
+  `;
+
+  let ptable = `<table class="dt"><thead><tr><th>Programa</th><th>Matrícula Sem ${sem}</th><th>Rutas activas</th><th>Tamaño prom. por ruta</th><th>Clasificación</th></tr></thead><tbody>`;
+  if(progData.length===0){
+    ptable += `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">Sin datos de rutas de enfoque para este campus</td></tr>`;
+  }
+  progData.forEach(d=>{
+    ptable += `<tr><td>${progShort(d.p)}</td><td>${fmt1(d.cohort)}</td><td>${d.routes}${ST.rutSimOn?' <span class="tag">simulado</span>':''}</td><td>${fmt1(d.perRoute)}</td><td>${badgeHtml(d.cls)}</td></tr>`;
+  });
+  ptable += `</tbody></table>`;
+  document.getElementById('rutPrograms').innerHTML = ptable;
+
+  if(fusionCards.length===0){
+    document.getElementById('rutGroups').innerHTML = `<div class="card"><div class="empty-box"><div class="ee">🔀</div>No hay certificados de ruta reutilizados entre los programas activos de <b>${progShort(campus)}</b> en Sem ${sem} con la configuración actual.</div></div>`;
+    return;
+  }
+  let html = `<div class="card"><div class="card-title">Fusiones por reutilización de certificado</div><div class="card-sub">Certificados de ruta de enfoque que coinciden entre programas y pueden compartir salón</div>`;
+  fusionCards.forEach(({cert,parts,sum,fusedCls})=>{
+    html += `<div class="fgroup">
+      <div class="fgroup-head">
+        <div><div class="fgroup-cert">${cert}</div><div class="fgroup-type">Certificado de ruta · ${parts.length} programas</div></div>
+        <span class="tag">Sem ${sem}</span>
+      </div>
+      <div class="fcols">
+        <div class="fcol">
+          <div class="fcol-title">Grupos individuales (por ruta)</div>
+          ${parts.map(x=>`<div class="frow"><span>${progShort(x.p)} <span class="tag">${x.ruta}</span></span><b>${fmt1(x.n)}</b> ${badgeHtml(x.cls)}</div>`).join('')}
+        </div>
+        <div class="farrow">→</div>
+        <div class="fcol">
+          <div class="fcol-title">Grupo fusionado</div>
+          <div class="fresult"><span>${cert}</span><b>${fmt(sum)}</b></div>
+          <div style="margin-top:8px">${badgeHtml(fusedCls)}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+  document.getElementById('rutGroups').innerHTML = html;
+}
+RENDERERS.rutas = renderRutas;
+
+// ============================================================
+// TAB 4: MULTICAMPUS
+// ============================================================
+function initMulticampus(){
+  fillSelect(document.getElementById('mcPrograma'), PROGRAMS, false, ST.mcPrograma);
+  document.getElementById('mcPrograma').addEventListener('change', e=>{
+    ST.mcPrograma=e.target.value; ST.mcSelected.clear(); renderMulticampus();
+  });
+  document.getElementById('mcAutoSelect').addEventListener('click', ()=>{
+    ST.mcSelected.clear();
+    (PROGRAM_CAMPUSES[ST.mcPrograma]||[]).forEach(c=>{
+      const arr = getSemArr(c, ST.mcPrograma);
+      if(arr && classify2(arr[0])==='flex') ST.mcSelected.add(c);
+    });
+    renderMulticampus();
+  });
+  document.getElementById('mcFusionar').addEventListener('click', ()=>{
+    if(ST.mcSelected.size<2){ alert('Selecciona al menos 2 campus para fusionar.'); return; }
+    ST.fusiones.push({id:'f'+Date.now(), programa:ST.mcPrograma, campuses:Array.from(ST.mcSelected)});
+    ST.mcSelected.clear();
+    renderMulticampus();
+  });
+}
+function renderMulticampus(){
+  const programa = ST.mcPrograma;
+  const campuses = (PROGRAM_CAMPUSES[programa]||[]).slice().sort();
+
+  let html = `<table class="dt"><thead><tr><th></th><th>Campus</th>`;
+  for(let s=1;s<=7;s++) html += `<th>Sem ${s}</th>`;
+  html += `</tr></thead><tbody>`;
+  campuses.forEach(c=>{
+    const arr = getSemArr(c,programa);
+    const checked = ST.mcSelected.has(c) ? 'checked' : '';
+    html += `<tr><td><input type="checkbox" class="mc-chk" data-campus="${c.replace(/"/g,'&quot;')}" ${checked}></td><td>${c}</td>`;
+    arr.forEach(v=>{ html += `<td>${cellHtml(v)}</td>`; });
+    html += `</tr>`;
+  });
+  html += `</tbody></table>`;
+  document.getElementById('mcTable').innerHTML = html;
+  document.querySelectorAll('.mc-chk').forEach(chk=>{
+    chk.addEventListener('change', e=>{
+      const c = e.target.dataset.campus;
+      if(e.target.checked) ST.mcSelected.add(c); else ST.mcSelected.delete(c);
+    });
+  });
+
+  renderFusionesList();
+}
+function combinedSemArr(campuses, programa){
+  const out = [0,0,0,0,0,0,0];
+  campuses.forEach(c=>{
+    const arr = getSemArr(c,programa);
+    if(arr) arr.forEach((v,i)=>out[i]+=v);
+  });
+  return out;
+}
+function renderFusionesList(){
+  const list = ST.fusiones.filter(f=>f.programa===ST.mcPrograma);
+  if(list.length===0){
+    document.getElementById('mcFusionesList').innerHTML = `<div class="empty-box"><div class="ee">🔗</div>Aún no hay fusiones guardadas para ${progShort(ST.mcPrograma)}. Selecciona 2 o más campus en la tabla y presiona "Fusionar".</div>`;
+    return;
+  }
+  let html = '';
+  list.forEach(f=>{
+    const arr = combinedSemArr(f.campuses, f.programa);
+    html += `<div class="fgroup">
+      <div class="fgroup-head">
+        <div><div class="fgroup-cert">${f.campuses.join(' + ')}</div><div class="fgroup-type">${progShort(f.programa)} · ${f.campuses.length} campus fusionados</div></div>
+        <button class="btn-ghost" data-id="${f.id}" title="Eliminar fusión">✕</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+        ${arr.map((v,i)=>`<div style="text-align:center"><div class="cell-n" style="margin-bottom:3px;font-weight:700;color:var(--muted)">Sem ${i+1}</div>${cellHtml(v)}</div>`).join('')}
+      </div>
+    </div>`;
+  });
+  document.getElementById('mcFusionesList').innerHTML = html;
+  document.querySelectorAll('#mcFusionesList .btn-ghost').forEach(b=>{
+    b.addEventListener('click', e=>{
+      const id = e.target.dataset.id;
+      ST.fusiones = ST.fusiones.filter(f=>f.id!==id);
+      renderFusionesList();
+    });
+  });
+}
+RENDERERS.multicampus = renderMulticampus;
+
+// ============================================================
+// TAB 5: COMPARATIVO
+// ============================================================
+function computeStrategyCounts(){
+  // start from per-row classification, then replace fused campuses with one combined row per fusion
+  const counts = {};
+  for(let s=1;s<=7;s++) counts[s] = {flex:0,multi:0,pres:0};
+
+  const fusedKeySet = new Set(); // "campus|programa" pairs absorbed into a fusion
+  ST.fusiones.forEach(f=>{
+    f.campuses.forEach(c=>fusedKeySet.add(c+'|'+f.programa));
+  });
+
+  D.baseDatos.forEach(r=>{
+    const key = r.c+'|'+r.p;
+    if(fusedKeySet.has(key)) return; // skip, counted in fusion below
+    for(let s=1;s<=7;s++) counts[s][classify2(r.s[s-1])]++;
+  });
+  ST.fusiones.forEach(f=>{
+    const arr = combinedSemArr(f.campuses, f.programa);
+    for(let s=1;s<=7;s++) counts[s][classify2(arr[s-1])]++;
+  });
+  return counts;
+}
+
+function renderComparativo(){
+  const base = computeNetworkCounts();
+  const strat = computeStrategyCounts();
+
+  let baseFlex=0, baseMulti=0, basePres=0, stFlex=0, stMulti=0, stPres=0;
+  for(let s=1;s<=7;s++){
+    baseFlex+=base[s].flex; baseMulti+=base[s].multi; basePres+=base[s].pres;
+    stFlex+=strat[s].flex; stMulti+=strat[s].multi; stPres+=strat[s].pres;
+  }
+  function deltaTag(delta, invert){
+    if(delta===0) return '';
+    const good = invert ? delta<0 : delta>0;
+    return `<span class="kpi-delta ${good?'up':'down'}">${delta>0?'+':''}${delta}</span>`;
+  }
+  document.getElementById('compKpis').innerHTML = `
+    <div class="kpi k-accent"><div class="kpi-val">${ST.fusiones.length}</div><div class="kpi-lbl">Fusiones multicampus activas</div></div>
+    <div class="kpi k-flex"><div class="kpi-val">${stFlex}</div><div class="kpi-lbl">Grupos-semestre Flex ${deltaTag(stFlex-baseFlex,true)}</div></div>
+    <div class="kpi k-multi"><div class="kpi-val">${stMulti}</div><div class="kpi-lbl">Grupos-semestre Multicampus ${deltaTag(stMulti-baseMulti,false)}</div></div>
+    <div class="kpi k-pres"><div class="kpi-val">${stPres}</div><div class="kpi-lbl">Grupos-semestre Presencial ${deltaTag(stPres-basePres,false)}</div></div>
+  `;
+
+  document.getElementById('compBase').innerHTML = chartFromCounts(base,[1,2,3,4,5,6,7]) + `
+    <div class="legend" style="margin-top:10px">
+      <div class="leg-item"><div class="ldot" style="background:var(--flex)"></div>Flex</div>
+      <div class="leg-item"><div class="ldot" style="background:var(--multi)"></div>Multicampus</div>
+      <div class="leg-item"><div class="ldot" style="background:var(--pres)"></div>Presencial</div>
+    </div>`;
+  document.getElementById('compStrat').innerHTML = chartFromCounts(strat,[1,2,3,4,5,6,7]) + `
+    <div class="foot-note">${ST.fusiones.length===0?'Aún no hay fusiones guardadas — ve a la pestaña Multicampus para crear escenarios.':ST.fusiones.length+' fusión(es) aplicada(s): '+ST.fusiones.map(f=>progShort(f.programa)+' ('+f.campuses.length+' campus)').join(', ')}</div>`;
+
+  // Troncalidad network opportunity, sem 1-2
+  let tronHtml = '';
+  [1,2].forEach(sem=>{
+    let groupCount=0, upgrades=0, campusesWithOpp=0;
+    CAMPUSES.forEach(c=>{
+      const gs = troncalidadGroupsForCampusSem(c, sem);
+      if(gs.length>0) campusesWithOpp++;
+      gs.forEach(g=>{
+        groupCount++;
+        let sum=0, anyNonPres=false;
+        g.programas.forEach(p=>{
+          const arr = getSemArr(c,p);
+          const n = arr?arr[sem-1]:0;
+          sum+=n;
+          if(classify2(n)!=='pres') anyNonPres=true;
+        });
+        if(classify2(sum)==='pres' && anyNonPres) upgrades++;
+      });
+    });
+    tronHtml += `<div class="kpi-grid" style="margin-bottom:${sem===1?'10px':'0'}">
+      <div class="kpi k-accent"><div class="kpi-val">Sem ${sem}</div><div class="kpi-lbl">${campusesWithOpp} campus con troncalidad</div></div>
+      <div class="kpi k-multi"><div class="kpi-val">${groupCount}</div><div class="kpi-lbl">Sesiones de certificado fusionables</div></div>
+      <div class="kpi k-pres"><div class="kpi-val">${upgrades}</div><div class="kpi-lbl">Alcanzan Presencial al fusionar</div></div>
+    </div>`;
+  });
+  document.getElementById('compTron').innerHTML = tronHtml;
+
+  // Rutas network opportunity, sem 6-7
+  let rutHtml = '';
+  [6,7].forEach(sem=>{
+    let groupCount=0, upgrades=0, campusesWithOpp=0;
+    CAMPUSES.forEach(c=>{
+      const progData = rutasProgramData(c, sem);
+      if(progData.length===0) return;
+      const fusions = rutasFusionForCampus(c, sem, progData);
+      if(fusions.length>0) campusesWithOpp++;
+      fusions.forEach(f=>{
+        groupCount++;
+        let sum=0, anyFlex=false;
+        f.entries.forEach(e=>{
+          const pd = progData.find(d=>d.p===e.p);
+          sum += pd.perRoute;
+          if(pd.cls==='flex') anyFlex=true;
+        });
+        if(classify2(sum)!=='flex' && anyFlex) upgrades++;
+      });
+    });
+    rutHtml += `<div class="kpi-grid" style="margin-bottom:${sem===6?'10px':'0'}">
+      <div class="kpi k-accent"><div class="kpi-val">Sem ${sem}</div><div class="kpi-lbl">${campusesWithOpp} campus con fusión disponible</div></div>
+      <div class="kpi k-multi"><div class="kpi-val">${groupCount}</div><div class="kpi-lbl">Certificados de ruta fusionables</div></div>
+      <div class="kpi k-pres"><div class="kpi-val">${upgrades}</div><div class="kpi-lbl">Grupos que dejan de ser Flex</div></div>
+    </div>`;
+  });
+  document.getElementById('compRutas').innerHTML = rutHtml;
+}
+RENDERERS.comparativo = renderComparativo;
+
+// ============================================================
+// INIT
+// ============================================================
+bindGlobal();
+initClasificacion();
+initTroncalidad();
+initRutas();
+initMulticampus();
+updateGChips();
+switchTab('clasificacion');
+
+</script>
+</body>
+</html>
